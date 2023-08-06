@@ -1,11 +1,11 @@
 import logo from './logo.svg';
 import './App.css';
-import * as ICAL from "ical.js" 
+import * as ICAL from "ical.js"
 import { testcontent } from './testics';
 import { testcontent2 } from './testics2';
 
 function App() {
-  
+
   exampleReadICS(testcontent2)
 
   return (
@@ -40,9 +40,13 @@ function exampleReadICS(textcontent) {
   for (let j = 0; j < events.length; j++) {
     var ev = new ICAL.Event(events[j]);
     console.log(ev.summary);
-    console.log(ev.startDate.toJSON());
     console.log(ev.isRecurring());
-    
+
+    let iter = ev.iterator(ev.startDate)
+    for (let next = iter.next(); next; next = iter.next()) {
+      console.log(next.toString());
+    }
+
   }
 }
 
