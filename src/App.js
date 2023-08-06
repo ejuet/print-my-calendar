@@ -3,6 +3,7 @@ import './App.css';
 import * as ICAL from "ical.js"
 import { testcontent } from './testics';
 import { testcontent2 } from './testics2';
+import { exampleReadICS } from './calendar.tsx';
 
 function App() {
 
@@ -32,21 +33,4 @@ function App() {
 export default App;
 
 
-function exampleReadICS(textcontent) {
-  var data = ICAL.parse(textcontent);
-  console.log(data);
-  var vcal = new ICAL.Component(data);
-  var events = vcal.getAllSubcomponents("vevent");
-  for (let j = 0; j < events.length; j++) {
-    var ev = new ICAL.Event(events[j]);
-    console.log(ev.summary);
-    console.log(ev.isRecurring());
-
-    let iter = ev.iterator(ev.startDate)
-    for (let next = iter.next(); next; next = iter.next()) {
-      console.log(next.toString());
-    }
-
-  }
-}
 
