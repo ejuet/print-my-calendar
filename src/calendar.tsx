@@ -4,7 +4,7 @@ import { testcontent } from './testics';
 import { testcontent2 } from './testics2';
 import React, { useState } from "react";
 import html2canvas from "html2canvas";
-import { Button, Table } from "react-bootstrap";
+import { Button, Table, Form } from "react-bootstrap";
 
 const useUmlaute = true;
 const defaultLanguage: string = "de-DE";
@@ -139,7 +139,6 @@ export function CalendarList() {
 
 							const nCal = [...calendars];
 							nCal.push(exampleReadICS(fr.result));
-							console.log(nCal)
 							setCalendars(nCal)
 						};
 						fr.readAsText(file);
@@ -149,6 +148,24 @@ export function CalendarList() {
 				}
 			}}
 		></input>
+
+		{
+			calendars.map((cal, index)=>{
+				return <div >
+					<input style={{width:"40%"}} defaultValue={cal.name} onBlur={(e)=>{
+						const nCal = [...calendars];
+						nCal[index].name=e.target.value;
+						setCalendars(nCal)
+					}}></input>
+					<Button onClick={()=>{
+						const nCal = [...calendars].filter((cal, ind)=>{
+							return ind!=index;
+						})
+						setCalendars(nCal)
+					}}>X</Button>
+				</div>
+			})
+		}
 
 		<h1>Result</h1>
 		<Button onClick={() => {
