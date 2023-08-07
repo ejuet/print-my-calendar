@@ -355,7 +355,7 @@ class Calendar {
 function CalendarPreview({ startOfCalendar, endOfCalendar, calendars }) {
 	return MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
 		return <div style={{ width: "1100px" }} key={monthAndYear} id={monthAndYear}>
-			<h2>{Language.getMonthName(monthAndYear)}</h2>
+			<MonthName monthAndYear={monthAndYear} />
 			<Table bordered>
 				<thead>
 					<tr>
@@ -369,7 +369,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars }) {
 					{days.map((day: Time) => {
 						var tdstyle = { backgroundColor: day.day % 2 == 1 ? "#dedede" : "white" }
 						return <tr key={day.toString()}>
-							<td style={tdstyle}>{day.day.toString() + "\n" + Language.getWeekdayName(day).slice(0, 2)}</td>
+							<td className="day" style={tdstyle}>{Language.getWeekdayName(day).slice(0, 2)+ " "+day.day.toString() }</td>
 							{calendars.map((cal: Calendar) => {
 								return <td style={tdstyle}>
 									{cal.getEvents(day).map((ev: CalendarEvent) => {
@@ -385,6 +385,10 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars }) {
 			</Table>
 		</div>;
 	});
+}
+
+function MonthName({monthAndYear}){
+	return <p className="monthname">{Language.getMonthName(monthAndYear)}</p>;
 }
 
 function downloadHTMLElementWithID(monthAndYear: string) {

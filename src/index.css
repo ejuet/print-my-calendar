@@ -23,6 +23,23 @@ input[type=number] {
 }
 
 /*
+.monthname{
+  font-size: 70px;
+}
+
+.day{
+  font-weight: bold;
+  font-size: larger;
+  text-align: right;
+  height: 60px;
+}
+
+th{
+  font-size: larger;
+}
+*/
+
+/*
 table.table-by-column tr{
   display: table-cell;
 }
