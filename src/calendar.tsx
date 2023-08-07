@@ -1,5 +1,5 @@
 
-import { parse, Component, Event, Time, Timezone } from "ical.js"
+import { parse, Component, Event, Time, Timezone, TimezoneService } from "ical.js"
 import { testcontent } from './testics';
 import { testcontent2 } from './testics2';
 import React from "react";
@@ -57,10 +57,14 @@ export function ListEvents() {
 
 function ExampleEventList() {
   const cal = exampleReadICS(testcontent2);
+  const timezone = Timezone.fromData({
+    tzid:"(GMT +02:00)"
+  });
   const today = Time.fromJSDate(new Date(), true);
   return <>
     <div>
-      <p>Today: {JSON.stringify(today)}</p>
+      <p>Today: {JSON.stringify(today.convertToZone(Timezone.localTimezone))}</p>
+      <p>Timezone: {timezone.toString()}</p>
       {
         cal.getAllEvents().map((e) => {
           return <div key={e.startDate.toString() + e.summary}>
@@ -76,6 +80,13 @@ function ExampleEventList() {
     </div>
 
   </>
+
+  function getD(){
+    var today = Time.fromJSDate(new Date(), false);
+    today = today.convertToZone(timezone);
+    //today = today.convertToZone(Timezone.utcTimezone);
+    return Timezone.convert_time(today, timezone, Timezone.utcTimezone);
+  }
 }
 
 class CalendarEvent {
