@@ -10,11 +10,11 @@ const useUmlaute = true;
 const defaultLanguage: string = "de-DE";
 const nicerTrashcanNames = true;
 const trashcanNameReplacements = {
-	"Restabfallbehälter": "Restmüll",
-	"Gelbe Grossbehälter": "Große Gelbe Tonne",
-	"Gelbe Behälter": "Gelbe Tonne",
-	"Bioabfallbehälter ": "Grüne Tonne",
-	"Papierbehälter": "Blaue Tonne",
+	"Restabfallbehälter": "🖤 Restmüll",
+	"Gelbe Grossbehälter": "💛 Große Gelbe Tonne",
+	"Gelbe Behälter": "💛 Gelbe Tonne",
+	"Bioabfallbehälter": "💚 Grüne Tonne",
+	"Papierbehälter": "💙 Blaue Tonne",
 }
 
 export function exampleReadICS(textcontent) {
