@@ -3,7 +3,8 @@ import "./App.css";
 import * as ICAL from "ical.js";
 import { testcontent } from "./testics";
 import { testcontent2 } from "./testics2";
-import { ListEvents, exampleReadICS } from "./calendar.tsx";
+import { CalendarList, ListEvents, exampleReadICS } from "./calendar.tsx";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   exampleReadICS(testcontent2);
@@ -33,7 +34,7 @@ function App() {
           }
         }}
       ></input>
-      <ListEvents />
+      <CalendarList />
     </div>
   );
 }

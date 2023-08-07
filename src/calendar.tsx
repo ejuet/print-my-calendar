@@ -1,9 +1,11 @@
 
-import { parse, Component, Event, Time, Timezone, TimezoneService } from "ical.js"
+import { parse, Component, Event, Time, Timezone, TimezoneService, Duration } from "ical.js"
 import { testcontent } from './testics';
 import { testcontent2 } from './testics2';
 import React from "react";
 import html2canvas from "html2canvas";
+import { Button, Table } from "react-bootstrap";
+
 
 export function exampleReadICS(textcontent) {
   let calendar = new Calendar();
@@ -41,7 +43,7 @@ export function ListEvents() {
     <div id="capture">
       <ExampleEventList />
     </div>
-    <button onClick={() => {
+    <Button onClick={() => {
       html2canvas(document.querySelector("#capture")!).then(canvas => {
         var link = document.createElement('a');
         link.download = 'calendar.png';
@@ -51,7 +53,7 @@ export function ListEvents() {
 
     }}>
       Download
-    </button>
+    </Button>
   </>
 }
 
@@ -60,11 +62,13 @@ function ExampleEventList() {
   const timezone = Timezone.fromData({
     tzid:"(GMT +02:00)"
   });
-  const today = Time.fromJSDate(new Date(), true);
+  const today = Time.fromJSDate(new Date(), false);
   return <>
     <div>
-      <p>Today: {JSON.stringify(today.convertToZone(Timezone.localTimezone))}</p>
+      <p>Today: {JSON.stringify(today)}</p>
       <p>Timezone: {timezone.toString()}</p>
+      <p>Earliest: {cal.getEarliestStartDate()?.startDate.toString()}</p>
+      <p>Last: {cal.getLatestEndDate()?.startDate.toString()}</p>
       {
         cal.getAllEvents().map((e) => {
           return <div key={e.startDate.toString() + e.summary}>
@@ -86,6 +90,39 @@ function ExampleEventList() {
     today = today.convertToZone(timezone);
     //today = today.convertToZone(Timezone.utcTimezone);
     return Timezone.convert_time(today, timezone, Timezone.utcTimezone);
+  }
+}
+
+export function CalendarList(){
+  const cal = exampleReadICS(testcontent2);
+  const startOfCalendar = new Time({
+    year: 2023,
+    month:1,
+    day:1
+  })
+  const endOfCalendar = new Time({
+    year: 2023,
+    month:12,
+    day:31
+  })
+
+  getDays();
+  return <>
+    <Table>
+      <tr >
+        <td >A</td>
+        <td >B</td>
+        <td >C</td>
+      </tr>
+    </Table>
+  </>
+
+  function getDays(){
+    var c = startOfCalendar.clone();
+    while(c.compare(endOfCalendar)<=0){
+      console.log(c.toString());
+      c.addDuration(Duration.fromData({days:1}));
+    }
   }
 }
 
@@ -133,6 +170,39 @@ class Calendar {
 
   getAllEvents() {
     return this.items;
+  }
+
+  getMinMaxStartDate(mult: number){ //mult=1 => min
+    if(this.items.length==0){
+      return null;
+    }
+    let earliest = this.items[0];
+    for (let i = 1; i < this.items.length; i++) {
+      if (this.items[i].startDate.compare(earliest.startDate)*mult<0) {
+        earliest=this.items[i];
+      }
+    }
+    return earliest;
+  }
+
+  getMinMaxEndDate(mult: number){ //mult=1 => min
+    if(this.items.length==0){
+      return null;
+    }
+    let earliest = this.items[0];
+    for (let i = 1; i < this.items.length; i++) {
+      if (this.items[i].endDate.compare(earliest.endDate)*mult<0) {
+        earliest=this.items[i];
+      }
+    }
+    return earliest;
+  }
+
+  getEarliestStartDate(){
+    return this.getMinMaxStartDate(1);
+  }
+  getLatestEndDate(){
+    return this.getMinMaxEndDate(-1);
   }
 
 }
