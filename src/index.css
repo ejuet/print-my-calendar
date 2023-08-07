@@ -12,6 +12,7 @@ code {
     monospace;
 }
 
+/*
 table.table-by-column tr{
   display: table-cell;
 }
@@ -24,3 +25,4 @@ table.table-by-column, table.table-by-column th, table.table-by-column td {
   border: 1px solid black;
   border-collapse: collapse;
 }
+*/

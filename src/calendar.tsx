@@ -122,9 +122,14 @@ export function CalendarList() {
 	})
 
 	return <>
+		<Button onClick={()=>{
+			MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
+				downloadHTMLElementWithID(monthAndYear);
+			})
+		}}>Download</Button>
 		{
 			MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
-				return <div key={monthAndYear} >
+				return <div style={{width:"1100px"}}  key={monthAndYear} id={monthAndYear} >
 					<h2>{Language.getMonthName(monthAndYear)}</h2>
 					<Table striped bordered>
 						<thead>
@@ -132,7 +137,7 @@ export function CalendarList() {
 								<th style={{ width: "10%" }}>Day</th>
 								{
 									calendars.map((cal: Calendar) => {
-										return <td>{cal.name}</td>
+										return <th style={{width:90/calendars.length+"%"}}>{cal.name}</th>
 									})
 
 								}
@@ -142,7 +147,7 @@ export function CalendarList() {
 							{
 								days.map((day: Time) => {
 									return <tr key={day.toString()}>
-										<td>{day.toString() + "\n" + Language.getWeekdayName(day)}</td>
+										<td>{day.day.toString() + "\n" + Language.getWeekdayName(day).slice(0,2)}</td>
 										{
 											calendars.map((cal: Calendar) => {
 												return <td>
@@ -273,6 +278,15 @@ class Calendar {
 
 }
 
+
+function downloadHTMLElementWithID(monthAndYear: string) {
+	html2canvas(document.getElementById(monthAndYear)!).then(canvas => {
+		var link = document.createElement('a');
+		link.download = 'calendar.png';
+		link.href = canvas.toDataURL();
+		link.click();
+	});
+}
 
 function getDaysBetween(start: Time, end: Time) {
 	var c = start.clone();
