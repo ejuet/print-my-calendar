@@ -6,13 +6,27 @@ import React from "react";
 import html2canvas from "html2canvas";
 import { Button, Table } from "react-bootstrap";
 
+const useUmlaute=true;
+const defaultLanguage: string = "de-DE";
+const nicerTrashcanNames = true;
+const trashcanNameReplacements = {
+	"Restabfallbehälter": "Restmüll",
+	"Gelbe Grossbehälter": "Gelbe Tonne",
+	"Bioabfallbehälter ": "Grüne Tonne",
+	"Papierbehälter": "Blaue Tonne",
+}
 
 export function exampleReadICS(textcontent) {
-	let calendar = new Calendar();
+	let calendar = new Calendar("Aaaa");
 
 	var data = parse(textcontent);
 	console.log(data);
+
 	var vcal = new Component(data);
+
+	var defaultCalendarName = vcal.getFirstProperty("x-wr-calname").getFirstValue();
+	calendar.name=defaultCalendarName;
+
 	var events = vcal.getAllSubcomponents("vevent");
 	for(let j = 0; j < events.length; j++) {
 		var ev = new Event(events[j]);
@@ -94,10 +108,11 @@ function ExampleEventList() {
 }
 
 export function CalendarList() {
-	const cal = exampleReadICS(testcontent2);
+	const calendars = [exampleReadICS(testcontent), exampleReadICS(testcontent2)];
+
 	const startOfCalendar = new Time({
 		year: 2023,
-		month: 1,
+		month: 8,
 		day: 1
 	})
 	const endOfCalendar = new Time({
@@ -108,32 +123,45 @@ export function CalendarList() {
 
 	return <>
 		{
-			MonthMap.map(cal.getDaysInMonths(), (monthAndYear: string, days: Time[]) => {
-				return <>
+			MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
+				return <div key={monthAndYear} >
 					<h2>{Language.getMonthName(monthAndYear)}</h2>
 					<Table striped bordered>
 						<thead>
 							<tr>
 								<th style={{ width: "10%" }}>Day</th>
+								{
+									calendars.map((cal: Calendar) => {
+										return <td>{cal.name}</td>
+									})
+
+								}
 							</tr>
 						</thead>
 						<tbody>
 							{
 								days.map((day: Time) => {
-									return <>
-										<tr>
-											<td>{day.toString()+"\n"+Language.getWeekdayName(day)}</td>
-											<td >A</td>
-											<td >B</td>
-											<td >C</td>
-										</tr>
-									</>
+									return <tr key={day.toString()}>
+										<td>{day.toString() + "\n" + Language.getWeekdayName(day)}</td>
+										{
+											calendars.map((cal: Calendar) => {
+												return <td>
+													{
+														cal.getEvents(day).map((ev: CalendarEvent) => {
+															return <p>{ev.summary}</p>
+														})
+													}
+												</td>
+											})
+
+										}
+									</tr>
 								})
 							}
 						</tbody>
 
 					</Table>
-				</>
+				</div>
 			})
 		}
 	</>
@@ -152,6 +180,18 @@ class CalendarEvent {
 		this.summary = summary;
 		this.endDate = startDate.clone();
 		this.endDate.addDuration(duration);
+		this.prettierSummary();
+	}
+
+	private prettierSummary() {
+		if(useUmlaute) {
+			this.summary = this.summary.replaceAll("ae", "ä");
+		}
+		if(nicerTrashcanNames) {
+			Object.keys(trashcanNameReplacements).forEach((key) => {
+				this.summary = this.summary.replaceAll(key, trashcanNameReplacements[key]);
+			});
+		}
 	}
 
 	isToday(date: Time) {
@@ -163,15 +203,17 @@ class CalendarEvent {
 
 class Calendar {
 	items: CalendarEvent[]
-	constructor() {
-		this.items = []
+	name: string
+	constructor(name: string) {
+		this.items = [];
+		this.name = name;
 	}
 
 	addEvent(ev: CalendarEvent) {
 		this.items.push(ev);
 	}
 
-	getEvent(date: Time) {
+	getEvents(date: Time) {
 		var today: CalendarEvent[];
 		today = []
 		for(let i = 0; i < this.items.length; i++) {
@@ -219,6 +261,7 @@ class Calendar {
 		return this.getMinMaxEndDate(-1);
 	}
 
+	/*
 	getDays() {
 		return getDaysBetween(this.getEarliestStartDate()?.startDate, this.getLatestEndDate()?.endDate)
 	}
@@ -226,7 +269,7 @@ class Calendar {
 	getDaysInMonths(): MonthMap {
 		return (groupBy(this.getDays(), "monthAndYear")) as MonthMap
 	}
-
+	*/
 
 }
 
@@ -237,11 +280,15 @@ function getDaysBetween(start: Time, end: Time) {
 	ret = [];
 	while(c.compare(end) <= 0) {
 		var n = clampToDay(c);
-		n.monthAndYear=n.month+"-"+n.year;
+		n.monthAndYear = n.month + "-" + n.year;
 		ret.push(n);
 		c.addDuration(Duration.fromData({ days: 1 }));
 	}
 	return ret;
+}
+
+function getDaysInMonths(start: Time, end: Time): MonthMap {
+	return (groupBy(getDaysBetween(start, end), "monthAndYear")) as MonthMap
 }
 
 function clampToDay(c: Time) {
@@ -257,8 +304,8 @@ class MonthMap {
 		})
 	}
 
-	
-	
+
+
 }
 
 function groupBy(arr, key) {
@@ -268,25 +315,24 @@ function groupBy(arr, key) {
 	}, {});
 };
 
-const defaultLanguage: string = "de-DE";
-class Language{
+class Language {
 
-	static getMonthNameByLanguage(monthAndYear:string, language: string) {
+	static getMonthNameByLanguage(monthAndYear: string, language: string) {
 		const options = { month: "long" } as const;
-		const month = monthAndYear.split("-")[0] as unknown as number;
+		const month = monthAndYear.split("-")[0] as unknown as number - 1;
 		const year = monthAndYear.split("-")[1] as unknown as number;
 		return new Intl.DateTimeFormat(language, options).format(new Date(year, month, 1));
 	}
 
-	static getMonthName(monthAndYear:string) {
+	static getMonthName(monthAndYear: string) {
 		return Language.getMonthNameByLanguage(monthAndYear, defaultLanguage);
 	}
 
-	static getWeekdayNameByLanguage(time:Time, language: string) {
+	static getWeekdayNameByLanguage(time: Time, language: string) {
 		const options = { weekday: "long" } as const;
 		return new Intl.DateTimeFormat(language, options).format(time.toJSDate());
 	}
-	static getWeekdayName(time:Time) {
+	static getWeekdayName(time: Time) {
 		return Language.getWeekdayNameByLanguage(time, defaultLanguage)
 	}
 }
