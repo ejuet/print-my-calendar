@@ -110,7 +110,7 @@ export function CalendarList() {
 		{
 			MonthMap.map(cal.getDaysInMonths(), (monthAndYear: string, days: Time[]) => {
 				return <>
-					<h2>{MonthMap.getMonthName(monthAndYear)}</h2>
+					<h2>{Language.getMonthName(monthAndYear)}</h2>
 					<Table striped bordered>
 						<thead>
 							<tr>
@@ -122,7 +122,7 @@ export function CalendarList() {
 								days.map((day: Time) => {
 									return <>
 										<tr>
-											<td>{day.toString()}</td>
+											<td>{day.toString()+"\n"+Language.getWeekdayName(day)}</td>
 											<td >A</td>
 											<td >B</td>
 											<td >C</td>
@@ -248,18 +248,6 @@ function clampToDay(c: Time) {
 	return Time.fromData({ year: c.year, month: c.month, day: c.day }, c.timezone);
 }
 
-class Month {
-	year: number;
-	month: number;
-	days: Time[];
-
-	constructor(year: number, month: number) {
-		this.year = year;
-		this.month = month;
-		this.days = [];
-	}
-
-}
 
 class MonthMap {
 
@@ -270,16 +258,7 @@ class MonthMap {
 	}
 
 	
-	static getMonthNameByLanguage(monthAndYear:string, language: string) {
-		const options = { month: "long" } as const;
-		const month = monthAndYear.split("-")[0] as unknown as number;
-		const year = monthAndYear.split("-")[1] as unknown as number;
-		return new Intl.DateTimeFormat(language, options).format(new Date(year, month, 1));
-	}
-
-	static getMonthName(monthAndYear:string) {
-		return this.getMonthNameByLanguage(monthAndYear, "de-DE");
-	}
+	
 }
 
 function groupBy(arr, key) {
@@ -288,3 +267,26 @@ function groupBy(arr, key) {
 		return rv;
 	}, {});
 };
+
+const defaultLanguage: string = "de-DE";
+class Language{
+
+	static getMonthNameByLanguage(monthAndYear:string, language: string) {
+		const options = { month: "long" } as const;
+		const month = monthAndYear.split("-")[0] as unknown as number;
+		const year = monthAndYear.split("-")[1] as unknown as number;
+		return new Intl.DateTimeFormat(language, options).format(new Date(year, month, 1));
+	}
+
+	static getMonthName(monthAndYear:string) {
+		return Language.getMonthNameByLanguage(monthAndYear, defaultLanguage);
+	}
+
+	static getWeekdayNameByLanguage(time:Time, language: string) {
+		const options = { weekday: "long" } as const;
+		return new Intl.DateTimeFormat(language, options).format(time.toJSDate());
+	}
+	static getWeekdayName(time:Time) {
+		return Language.getWeekdayNameByLanguage(time, defaultLanguage)
+	}
+}
