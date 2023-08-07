@@ -2,9 +2,10 @@
 import { parse, Component, Event, Time, Timezone, TimezoneService, Duration } from "ical.js"
 import { testcontent } from './testics';
 import { testcontent2 } from './testics2';
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import html2canvas from "html2canvas";
-import { Button, Table, Form } from "react-bootstrap";
+import { Button, Table, Form, Container } from "react-bootstrap";
+import userEvent from "@testing-library/user-event";
 
 const useUmlaute = true;
 const defaultLanguage: string = "de-DE";
@@ -111,16 +112,16 @@ function ExampleEventList() {
 export function CalendarList() {
 	const [calendars, setCalendars] = useState([exampleReadICS(testcontent), exampleReadICS(testcontent2)]);
 
-	const startOfCalendar = new Time({
+	const [startOfCalendar, setStart] = useState(new Time({
 		year: 2023,
 		month: 8,
 		day: 1
-	})
-	const endOfCalendar = new Time({
+	}))
+	const [endOfCalendar, setEnd] = useState(new Time({
 		year: 2023,
 		month: 12,
 		day: 31
-	})
+	}))
 
 	return <>
 		<h1>Upload Files</h1>
@@ -143,7 +144,7 @@ export function CalendarList() {
 							nCal.push(exampleReadICS(fr.result));
 							setCalendars(nCal)
 							*/
-							setCalendars(oldCals=>[...oldCals, exampleReadICS(fr.result)])
+							setCalendars(oldCals => [...oldCals, exampleReadICS(fr.result)])
 						};
 						fr.readAsText(file);
 					} else {
@@ -154,16 +155,16 @@ export function CalendarList() {
 		></input>
 
 		{
-			calendars.map((cal, index)=>{
+			calendars.map((cal, index) => {
 				return <div >
-					<input style={{width:"40%"}} defaultValue={cal.name} onBlur={(e)=>{
+					<input style={{ width: "40%" }} defaultValue={cal.name} onBlur={(e) => {
 						const nCal = [...calendars];
-						nCal[index].name=e.target.value;
+						nCal[index].name = e.target.value;
 						setCalendars(nCal)
 					}}></input>
-					<Button onClick={()=>{
-						const nCal = [...calendars].filter((cal, ind)=>{
-							return ind!=index;
+					<Button onClick={() => {
+						const nCal = [...calendars].filter((cal, ind) => {
+							return ind != index;
 						})
 						setCalendars(nCal)
 					}}>X</Button>
@@ -171,15 +172,65 @@ export function CalendarList() {
 			})
 		}
 
+		{
+			/*
+				<h3>Calendar for year</h3>
+				<Form.Control type="number" defaultValue={startOfCalendar.year} onBlur={(e)=>{
+					let year = Number(e.target.value);
+					setStart(new Time({year:year, month:1, day:1}))
+					setEnd(new Time({year:year, month:12, day:31}))
+				}} />
+		*/
+		}
+
+		<h3>Start Date</h3>
+		< DatePicker defaultYear={startOfCalendar.year} defaultMonth={startOfCalendar.month} defaultDay={startOfCalendar.day} onNewDate={(t: Time) => {
+			setStart(t.clone());
+		}} />
+
+		<h3>End Date</h3>
+		< DatePicker defaultYear={endOfCalendar.year} defaultMonth={endOfCalendar.month} defaultDay={endOfCalendar.day} onNewDate={(t: Time) => {
+			setEnd(t.clone());
+		}} />
+
 		<h1>Result</h1>
 		<Button onClick={() => {
 			MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
 				downloadHTMLElementWithID(monthAndYear);
 			})
 		}}>Download</Button>
-		<CalendarPreview startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars}/>
+		<CalendarPreview startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars} />
 	</>
 
+}
+
+function DatePicker({ onNewDate, defaultYear, defaultMonth, defaultDay }) {
+	const [year, setYear] = useState(defaultYear);
+	const [day, setDay] = useState(defaultDay);
+	const [month, setMonth] = useState(defaultMonth);
+
+	useEffect(() => {
+		pushDate()
+	}, [year, month, day])
+
+	return <Container>
+		<div className="d-flex  justify-content-center">
+			<Form.Control onBlur={(e) => { setYear(parseInt(e.target.value)) }} type="number" defaultValue={year}></Form.Control>
+			<Form.Select defaultValue={month} onChange={(e) => { setMonth(parseInt(e.target.value)) }}>
+				{
+					Array(12).fill("i").map((el, i) => {
+						return <option key={i} value={i + 1}>{Language.getMonthNameByNumber(i)}</option>
+					})
+				}
+			</Form.Select>
+			<Form.Control onBlur={(e) => { setDay(parseInt(e.target.value)); }} type="number" defaultValue={day}></Form.Control>
+		</div>
+	</Container>
+
+	function pushDate() {
+		const t = new Time({ year: year, month: month, day: day });
+		onNewDate(t);
+	}
 }
 
 class CalendarEvent {
@@ -213,17 +264,17 @@ class CalendarEvent {
 		return date.compareDateOnlyTz(this.startDate, utcTimezone) >= 0 && date.compareDateOnlyTz(this.endDate, utcTimezone) <= 0
 	}
 
-	getFullSummary(){
-		const startTime = this.startDate.hour!=0 || this.startDate.minute!=0 || this.startDate.second!=0 ? 
-		this.startDate.toJSDate().toLocaleTimeString(defaultLanguage) : "";
+	getFullSummary() {
+		const startTime = this.startDate.hour != 0 || this.startDate.minute != 0 || this.startDate.second != 0 ?
+			this.startDate.toJSDate().toLocaleTimeString(defaultLanguage) : "";
 
-		const endTime = this.endDate.hour!=0 || this.endDate.minute!=0 || this.endDate.second!=0 ? 
-		"bis "+this.endDate.toJSDate().toLocaleTimeString(defaultLanguage) : "";
+		const endTime = this.endDate.hour != 0 || this.endDate.minute != 0 || this.endDate.second != 0 ?
+			"bis " + this.endDate.toJSDate().toLocaleTimeString(defaultLanguage) : "";
 
-		const zeit = startTime!="" && endTime!="" ? 
-		" ("+startTime+" "+endTime+")" : "";
+		const zeit = startTime != "" && endTime != "" ?
+			" (" + startTime + " " + endTime + ")" : "";
 
-		return this.summary+zeit;
+		return this.summary + zeit;
 	}
 
 }
@@ -301,7 +352,7 @@ class Calendar {
 }
 
 
-function CalendarPreview({startOfCalendar, endOfCalendar, calendars}) {
+function CalendarPreview({ startOfCalendar, endOfCalendar, calendars }) {
 	return MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
 		return <div style={{ width: "1100px" }} key={monthAndYear} id={monthAndYear}>
 			<h2>{Language.getMonthName(monthAndYear)}</h2>
@@ -316,7 +367,7 @@ function CalendarPreview({startOfCalendar, endOfCalendar, calendars}) {
 				</thead>
 				<tbody>
 					{days.map((day: Time) => {
-						var tdstyle={backgroundColor: day.day%2==1?"#dedede":"white"}
+						var tdstyle = { backgroundColor: day.day % 2 == 1 ? "#dedede" : "white" }
 						return <tr key={day.toString()}>
 							<td style={tdstyle}>{day.day.toString() + "\n" + Language.getWeekdayName(day).slice(0, 2)}</td>
 							{calendars.map((cal: Calendar) => {
@@ -324,7 +375,7 @@ function CalendarPreview({startOfCalendar, endOfCalendar, calendars}) {
 									{cal.getEvents(day).map((ev: CalendarEvent) => {
 										return ev.getFullSummary();
 									}).join(", ")
-								}
+									}
 								</td>;
 							})}
 						</tr>;
@@ -389,10 +440,18 @@ function groupBy(arr, key) {
 class Language {
 
 	static getMonthNameByLanguage(monthAndYear: string, language: string) {
-		const options = { month: "long" } as const;
 		const month = monthAndYear.split("-")[0] as unknown as number - 1;
-		const year = monthAndYear.split("-")[1] as unknown as number;
-		return new Intl.DateTimeFormat(language, options).format(new Date(year, month, 1));
+		return Language.getMonthNameByNumberByLanguage(language, month);
+	}
+
+	static getMonthNameByNumberByLanguage(language: string, month: number) {
+		const options = { month: "long" } as const;
+		return new Intl.DateTimeFormat(language, options).format(new Date(2000, month, 1));
+	}
+
+	static getMonthNameByNumber(month: number) {
+		const options = { month: "long" } as const;
+		return new Intl.DateTimeFormat(defaultLanguage, options).format(new Date(2000, month, 1));
 	}
 
 	static getMonthName(monthAndYear: string) {
