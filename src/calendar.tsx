@@ -3,6 +3,7 @@ import { parse, Component, Event, Time, Timezone } from "ical.js"
 import { testcontent } from './testics';
 import { testcontent2 } from './testics2';
 import React from "react";
+import html2canvas from "html2canvas";
 
 export function exampleReadICS(textcontent) {
   let calendar = new Calendar();
@@ -36,6 +37,25 @@ export function exampleReadICS(textcontent) {
 }
 
 export function ListEvents() {
+  return <>
+    <div id="capture">
+      <ExampleEventList />
+    </div>
+    <button onClick={() => {
+      html2canvas(document.querySelector("#capture")!).then(canvas => {
+        var link = document.createElement('a');
+        link.download = 'calendar.png';
+        link.href = canvas.toDataURL()
+        link.click();
+      });
+
+    }}>
+      Download
+    </button>
+  </>
+}
+
+function ExampleEventList() {
   const cal = exampleReadICS(testcontent2);
   const today = Time.fromJSDate(new Date(), true);
   return <>
@@ -43,11 +63,11 @@ export function ListEvents() {
       <p>Today: {JSON.stringify(today)}</p>
       {
         cal.getAllEvents().map((e) => {
-          return <div key={e.startDate.toString()+e.summary}>
+          return <div key={e.startDate.toString() + e.summary}>
             <h2>{e.summary}</h2>
             <p>{e.startDate.toString()} bis {e.endDate.toString()}</p>
             {
-              e.isToday(today) && 
+              e.isToday(today) &&
               <b>Today</b>
             }
           </div>

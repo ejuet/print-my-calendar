@@ -33,7 +33,7 @@ function App() {
           }
         }}
       ></input>
-      <ListEvents/>
+      <ListEvents />
     </div>
   );
 }
