@@ -2,11 +2,11 @@
 import { parse, Component, Event, Time, Timezone, TimezoneService, Duration } from "ical.js"
 import { testcontent } from './testics';
 import { testcontent2 } from './testics2';
-import React from "react";
+import React, { useState } from "react";
 import html2canvas from "html2canvas";
 import { Button, Table } from "react-bootstrap";
 
-const useUmlaute=true;
+const useUmlaute = true;
 const defaultLanguage: string = "de-DE";
 const nicerTrashcanNames = true;
 const trashcanNameReplacements = {
@@ -25,7 +25,7 @@ export function exampleReadICS(textcontent) {
 	var vcal = new Component(data);
 
 	var defaultCalendarName = vcal.getFirstProperty("x-wr-calname").getFirstValue();
-	calendar.name=defaultCalendarName;
+	calendar.name = defaultCalendarName;
 
 	var events = vcal.getAllSubcomponents("vevent");
 	for(let j = 0; j < events.length; j++) {
@@ -108,7 +108,7 @@ function ExampleEventList() {
 }
 
 export function CalendarList() {
-	const calendars = [exampleReadICS(testcontent), exampleReadICS(testcontent2)];
+	const [calendars, setCalendars] = useState([exampleReadICS(testcontent), exampleReadICS(testcontent2)]);
 
 	const startOfCalendar = new Time({
 		year: 2023,
@@ -122,53 +122,41 @@ export function CalendarList() {
 	})
 
 	return <>
-		<Button onClick={()=>{
+		<h1>Upload Files</h1>
+		<input
+			type="file"
+			accept="ics"
+			multiple
+			onChange={(e) => {
+				var files = e.target.files!;
+				for(let i = 0; i < files.length; i++) {
+					const file = files[i];
+					if(file.name.endsWith(".ics")) {
+						let fr = new FileReader();
+						fr.onload = function () {
+							console.log(fr.result);
+							console.log(typeof fr.result);
+
+							const nCal = [...calendars];
+							nCal.push(exampleReadICS(fr.result));
+							console.log(nCal)
+							setCalendars(nCal)
+						};
+						fr.readAsText(file);
+					} else {
+						window.alert("Please only upload .ics files");
+					}
+				}
+			}}
+		></input>
+
+		<h1>Result</h1>
+		<Button onClick={() => {
 			MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
 				downloadHTMLElementWithID(monthAndYear);
 			})
 		}}>Download</Button>
-		{
-			MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
-				return <div style={{width:"1100px"}}  key={monthAndYear} id={monthAndYear} >
-					<h2>{Language.getMonthName(monthAndYear)}</h2>
-					<Table striped bordered>
-						<thead>
-							<tr>
-								<th style={{ width: "10%" }}>Day</th>
-								{
-									calendars.map((cal: Calendar) => {
-										return <th style={{width:90/calendars.length+"%"}}>{cal.name}</th>
-									})
-
-								}
-							</tr>
-						</thead>
-						<tbody>
-							{
-								days.map((day: Time) => {
-									return <tr key={day.toString()}>
-										<td>{day.day.toString() + "\n" + Language.getWeekdayName(day).slice(0,2)}</td>
-										{
-											calendars.map((cal: Calendar) => {
-												return <td>
-													{
-														cal.getEvents(day).map((ev: CalendarEvent) => {
-															return <p>{ev.summary}</p>
-														})
-													}
-												</td>
-											})
-
-										}
-									</tr>
-								})
-							}
-						</tbody>
-
-					</Table>
-				</div>
-			})
-		}
+		<CalendarPreview startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars}/>
 	</>
 
 }
@@ -278,6 +266,40 @@ class Calendar {
 
 }
 
+
+function CalendarPreview({startOfCalendar, endOfCalendar, calendars}) {
+	return MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
+		return <div style={{ width: "1100px" }} key={monthAndYear} id={monthAndYear}>
+			<h2>{Language.getMonthName(monthAndYear)}</h2>
+			<Table striped bordered>
+				<thead>
+					<tr>
+						<th style={{ width: "10%" }}>Day</th>
+						{calendars.map((cal: Calendar) => {
+							return <th style={{ width: 90 / calendars.length + "%" }}>{cal.name}</th>;
+						})}
+					</tr>
+				</thead>
+				<tbody>
+					{days.map((day: Time) => {
+						return <tr key={day.toString()}>
+							<td>{day.day.toString() + "\n" + Language.getWeekdayName(day).slice(0, 2)}</td>
+							{calendars.map((cal: Calendar) => {
+								return <td>
+									{cal.getEvents(day).map((ev: CalendarEvent) => {
+										return <p>{ev.summary}</p>;
+									})
+								}
+								</td>;
+							})}
+						</tr>;
+					})}
+				</tbody>
+
+			</Table>
+		</div>;
+	});
+}
 
 function downloadHTMLElementWithID(monthAndYear: string) {
 	html2canvas(document.getElementById(monthAndYear)!).then(canvas => {
