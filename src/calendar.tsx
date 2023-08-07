@@ -11,7 +11,8 @@ const defaultLanguage: string = "de-DE";
 const nicerTrashcanNames = true;
 const trashcanNameReplacements = {
 	"Restabfallbehälter": "Restmüll",
-	"Gelbe Grossbehälter": "Gelbe Tonne",
+	"Gelbe Grossbehälter": "Große Gelbe Tonne",
+	"Gelbe Behälter": "Gelbe Tonne",
 	"Bioabfallbehälter ": "Grüne Tonne",
 	"Papierbehälter": "Blaue Tonne",
 }
@@ -137,9 +138,12 @@ export function CalendarList() {
 							console.log(fr.result);
 							console.log(typeof fr.result);
 
+							/*
 							const nCal = [...calendars];
 							nCal.push(exampleReadICS(fr.result));
 							setCalendars(nCal)
+							*/
+							setCalendars(oldCals=>[...oldCals, exampleReadICS(fr.result)])
 						};
 						fr.readAsText(file);
 					} else {
@@ -187,7 +191,7 @@ class CalendarEvent {
 	constructor(startDate: any, duration: any, summary: string) {
 		this.startDate = startDate;
 		this.durationInSeconds = duration.toSeconds();
-		this.summary = summary;
+		this.summary = summary.trim();
 		this.endDate = startDate.clone();
 		this.endDate.addDuration(duration);
 		this.prettierSummary();
@@ -207,6 +211,19 @@ class CalendarEvent {
 	isToday(date: Time) {
 		var utcTimezone = Timezone.utcTimezone;
 		return date.compareDateOnlyTz(this.startDate, utcTimezone) >= 0 && date.compareDateOnlyTz(this.endDate, utcTimezone) <= 0
+	}
+
+	getFullSummary(){
+		const startTime = this.startDate.hour!=0 || this.startDate.minute!=0 || this.startDate.second!=0 ? 
+		this.startDate.toJSDate().toLocaleTimeString(defaultLanguage) : "";
+
+		const endTime = this.endDate.hour!=0 || this.endDate.minute!=0 || this.endDate.second!=0 ? 
+		"bis "+this.endDate.toJSDate().toLocaleTimeString(defaultLanguage) : "";
+
+		const zeit = startTime!="" && endTime!="" ? 
+		" ("+startTime+" "+endTime+")" : "";
+
+		return this.summary+zeit;
 	}
 
 }
@@ -288,7 +305,7 @@ function CalendarPreview({startOfCalendar, endOfCalendar, calendars}) {
 	return MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
 		return <div style={{ width: "1100px" }} key={monthAndYear} id={monthAndYear}>
 			<h2>{Language.getMonthName(monthAndYear)}</h2>
-			<Table striped bordered>
+			<Table bordered>
 				<thead>
 					<tr>
 						<th style={{ width: "10%" }}>Day</th>
@@ -299,13 +316,14 @@ function CalendarPreview({startOfCalendar, endOfCalendar, calendars}) {
 				</thead>
 				<tbody>
 					{days.map((day: Time) => {
+						var tdstyle={backgroundColor: day.day%2==1?"#dedede":"white"}
 						return <tr key={day.toString()}>
-							<td>{day.day.toString() + "\n" + Language.getWeekdayName(day).slice(0, 2)}</td>
+							<td style={tdstyle}>{day.day.toString() + "\n" + Language.getWeekdayName(day).slice(0, 2)}</td>
 							{calendars.map((cal: Calendar) => {
-								return <td>
+								return <td style={tdstyle}>
 									{cal.getEvents(day).map((ev: CalendarEvent) => {
-										return <p>{ev.summary}</p>;
-									})
+										return ev.getFullSummary();
+									}).join(", ")
 								}
 								</td>;
 							})}
