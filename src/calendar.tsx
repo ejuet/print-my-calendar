@@ -28,6 +28,9 @@ export function exampleReadICS(textcontent) {
 	var vcal = new Component(data);
 
 	var defaultCalendarName = vcal.getFirstProperty("x-wr-calname")?.getFirstValue();
+	if(!vcal.getFirstProperty("x-wr-calname")){
+		defaultCalendarName="New Calendar"
+	}
 	calendar.name = defaultCalendarName;
 
 	var events = vcal.getAllSubcomponents("vevent");
@@ -157,8 +160,8 @@ export function CalendarList() {
 
 		{
 			calendars.map((cal, index) => {
-				return <div className="d-flex justify-content-center" style={{gap:10, margin: 15}}>
-					<MyInput value={cal.name} onBlur={(e)=>{
+				return <div key={index} className="d-flex justify-content-center" style={{ gap: 10, margin: 15 }}>
+					<MyInput value={cal.name} onBlur={(e) => {
 						const nCal = [...calendars];
 						nCal[index].name = e.target.value;
 						setCalendars(nCal)
@@ -168,17 +171,17 @@ export function CalendarList() {
 							return ind != index;
 						})
 						setCalendars(nCal)
-					}}>X</Button>
+					}}>Delete</Button>
 					{
 						calendars.filter((c) => { return c != cal }).length > 0 &&
 
 						<DropdownButton title="Merge">
 							{
-								calendars.map((other) => {
+								calendars.map((other, i) => {
 									if(other != cal) {
-										return <DropdownItem onClick={() => {
-											cal.insertOtherCalendar(other)
-											setCalendars(oldCals => [...oldCals.filter((o) => { return o != other })])
+										return <DropdownItem key={i} onClick={() => {
+											var c = cal.mergeWithCalendar(other)
+											setCalendars(oldCals => [...oldCals.filter((o) => { return o != other && o != cal }), c])
 										}}>
 											Merge with {other.name}
 										</DropdownItem>
@@ -187,6 +190,25 @@ export function CalendarList() {
 							}
 
 						</DropdownButton>
+					}
+
+					{
+						cal.getIsMerged() &&
+						<Button onClick={() => {
+							setCalendars(old => [...old.filter((o) => { return o != cal }), ...cal.splitCalendar()])
+						}}>Split</Button>
+					}
+
+					{
+						calendars.length > 1 &&
+						<>
+							<Button onClick={() => {
+								setCalendars(old => swap([...old], index, index - 1))
+							}}>Move Left</Button>
+							<Button onClick={() => {
+								setCalendars(old => swap([...old], index, index + 1))
+							}}>Move Right</Button>
+						</>
 					}
 
 				</div>
@@ -229,17 +251,29 @@ export function CalendarList() {
 
 }
 
-function MyInput({value, onBlur}){
+function swap(arr, a: number, b: number) {
+
+	if(a < 0 || a >= arr.length || b < 0 || b >= arr.length) {
+		return arr;
+	}
+
+	var temp = arr[a];
+	arr[a] = arr[b];
+	arr[b] = temp;
+	return arr;
+}
+
+function MyInput({ value, onBlur }) {
 	const [val, setVal] = useState(value);
 
-	useEffect(()=>{
+	useEffect(() => {
 		setVal(value);
 	}, [value])
 
 	return <Form.Control style={{ width: "40%" }} value={val} onChange={(e) => {
 		setVal(e.target.value)
 	}}
-	onBlur={onBlur}></Form.Control>
+		onBlur={onBlur}></Form.Control>
 }
 
 function DatePicker({ onNewDate, defaultYear, defaultMonth, defaultDay }) {
@@ -252,7 +286,7 @@ function DatePicker({ onNewDate, defaultYear, defaultMonth, defaultDay }) {
 	}, [year, month, day])
 
 	return <Container>
-		<div className="d-flex  justify-content-center" style={{gap:10, margin: 15}}>
+		<div className="d-flex  justify-content-center" style={{ gap: 10, margin: 15 }}>
 			<Form.Control onBlur={(e) => { setYear(parseInt(e.target.value)) }} type="number" defaultValue={year}></Form.Control>
 			<Form.Select defaultValue={month} onChange={(e) => { setMonth(parseInt(e.target.value)) }}>
 				{
@@ -277,7 +311,8 @@ class CalendarEvent {
 	duration: any;
 	durationInSeconds: number;
 	endDate: any;
-	private istrash:boolean;
+	private istrash: boolean;
+	private belongsToCalendars: Calendar;
 	constructor(startDate: any, duration: any, summary: string) {
 		this.startDate = startDate;
 		this.durationInSeconds = duration.toSeconds();
@@ -285,12 +320,19 @@ class CalendarEvent {
 		this.endDate = startDate.clone();
 		this.endDate.addDuration(duration);
 
-		this.istrash=false;
-		for(let i=0; i<Object.keys(trashcanNameReplacements).length; i++){
-			if(this.summary===Object.keys(trashcanNameReplacements)[i]){
+		this.istrash = false;
+		for(let i = 0; i < Object.keys(trashcanNameReplacements).length; i++) {
+			if(this.summary === Object.keys(trashcanNameReplacements)[i]) {
 				this.istrash = true;
 			}
 		}
+	}
+
+	addedToCalendar(cal: Calendar) {
+		this.belongsToCalendars = cal;
+	}
+	getCalendar() {
+		return this.belongsToCalendars;
 	}
 
 	private getPrettierSummary() {
@@ -306,7 +348,7 @@ class CalendarEvent {
 		return s;
 	}
 
-	isTrash(){
+	isTrash() {
 		return this.istrash;
 	}
 
@@ -315,16 +357,16 @@ class CalendarEvent {
 		return date.compareDateOnlyTz(this.startDate, utcTimezone) >= 0 && date.compareDateOnlyTz(this.endDate, utcTimezone) <= 0
 	}
 
-	isMultipleDaysLong(){
-		return (this.startDate.compareDateOnlyTz(this.endDate, Timezone.localTimezone)<0)
+	isMultipleDaysLong() {
+		return (this.startDate.compareDateOnlyTz(this.endDate, Timezone.localTimezone) < 0)
 	}
 
-	isBeginningDate(date: Time){
-		return this.isMultipleDaysLong() && (this.startDate.compareDateOnlyTz(date, Timezone.localTimezone)==0);
+	isBeginningDate(date: Time) {
+		return this.isMultipleDaysLong() && (this.startDate.compareDateOnlyTz(date, Timezone.localTimezone) == 0);
 	}
 
-	isEndDate(date: Time){
-		return this.isMultipleDaysLong() && (this.endDate.compareDateOnlyTz(date, Timezone.localTimezone)==0);
+	isEndDate(date: Time) {
+		return this.isMultipleDaysLong() && (this.endDate.compareDateOnlyTz(date, Timezone.localTimezone) == 0);
 	}
 
 	getFullSummary() {
@@ -334,20 +376,20 @@ class CalendarEvent {
 		const endTime = this.endDate.hour != 0 || this.endDate.minute != 0 || this.endDate.second != 0 ?
 			this.endDate.toJSDate().toLocaleTimeString(defaultLanguage) : "";
 
-		var zeit ="";
+		var zeit = "";
 
-		if(startTime!="" && endTime==""){
-			zeit = "ab "+ startTime;
+		if(startTime != "" && endTime == "") {
+			zeit = "ab " + startTime;
 		}
-		else if(startTime=="" && endTime!=""){
-			zeit = "bis "+endTime
+		else if(startTime == "" && endTime != "") {
+			zeit = "bis " + endTime
 		}
-		else if(startTime!=""&&endTime!=""){
-			zeit = startTime+" bis "+endTime
+		else if(startTime != "" && endTime != "") {
+			zeit = startTime + " bis " + endTime
 		}
 
-		if(zeit!=""){
-			zeit=" ("+zeit+")"
+		if(zeit != "") {
+			zeit = " (" + zeit + ")"
 		}
 		/*
 			const zeit = startTime != "" || endTime != "" ?
@@ -362,13 +404,20 @@ class CalendarEvent {
 class Calendar {
 	items: CalendarEvent[]
 	name: string
+	private isMerged: boolean
 	constructor(name: string) {
 		this.items = [];
 		this.name = name;
+		this.isMerged = false;
 	}
 
 	addEvent(ev: CalendarEvent) {
+		ev.addedToCalendar(this);
 		this.items.push(ev);
+	}
+
+	getIsMerged() {
+		return this.isMerged;
 	}
 
 	getEvents(date: Time) {
@@ -376,24 +425,24 @@ class Calendar {
 		today = []
 		for(let i = 0; i < this.items.length; i++) {
 			var e = this.items[i];
-			if(e.isMultipleDaysLong() && !e.isTrash()){
-				if(e.isBeginningDate(date)){
+			if(e.isMultipleDaysLong() && !e.isTrash()) {
+				if(e.isBeginningDate(date)) {
 					var cl = Object.create(e);
-					cl.summary = "Beginn von "+cl.getPrettierSummary();
+					cl.summary = "Beginn von " + cl.getPrettierSummary();
 					cl.endDate = new Time();
 					today.push(cl)
 				}
-				else if(e.isEndDate(date)){
+				else if(e.isEndDate(date)) {
 					var cl = Object.create(e);
-					cl.summary = "Ende von "+cl.getPrettierSummary();
+					cl.summary = "Ende von " + cl.getPrettierSummary();
 					cl.startDate = new Time();
 					today.push(cl)
 				}
 			}
-			else{
+			else {
 				if(e.isToday(date)) {
 					today.push(this.items[i]);
-					
+
 				}
 			}
 		}
@@ -437,9 +486,26 @@ class Calendar {
 		return this.getMinMaxEndDate(-1);
 	}
 
-	insertOtherCalendar(other: Calendar) {
-		this.name += " & " + other.name;
-		this.items = this.items.concat(other.items);
+	mergeWithCalendar(other: Calendar) {
+		var c = new Calendar(this.name + " & " + other.name);
+		c.items = this.items.concat(other.items);
+		c.isMerged = true;
+		return c;
+	}
+
+	splitCalendar() {
+		var nCals: Calendar[];
+		nCals = [];
+		for(let i = 0; i < this.items.length; i++) {
+			var e = this.items[i];
+
+			var c = e.getCalendar();
+			if(nCals.indexOf(c) == -1) {
+				nCals.push(c);
+			}
+		}
+		c.isMerged = false;
+		return nCals;
 	}
 
 	/*
@@ -463,8 +529,8 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars }) {
 				<thead>
 					<tr>
 						<th style={{ width: "10%" }}>Day</th>
-						{calendars.map((cal: Calendar) => {
-							return <th style={{ width: 90 / calendars.length + "%" }}>{cal.name}</th>;
+						{calendars.map((cal: Calendar, i:number) => {
+							return <th key={i} style={{ width: 90 / calendars.length + "%" }}>{cal.name}</th>;
 						})}
 					</tr>
 				</thead>
@@ -473,8 +539,8 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars }) {
 						var tdstyle = { backgroundColor: day.day % 2 == 1 ? "#dedede" : "white" }
 						return <tr key={day.toString()}>
 							<td className="day" style={tdstyle}>{Language.getWeekdayName(day).slice(0, 2) + " " + day.day.toString()}</td>
-							{calendars.map((cal: Calendar) => {
-								return <td style={tdstyle}>
+							{calendars.map((cal: Calendar, i:number) => {
+								return <td key={i} style={tdstyle}>
 									{cal.getEvents(day).map((ev: CalendarEvent) => {
 										return ev.getFullSummary();
 									}).join(", ")
