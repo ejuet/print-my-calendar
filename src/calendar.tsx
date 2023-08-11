@@ -28,8 +28,8 @@ export function exampleReadICS(textcontent) {
 	var vcal = new Component(data);
 
 	var defaultCalendarName = vcal.getFirstProperty("x-wr-calname")?.getFirstValue();
-	if(!vcal.getFirstProperty("x-wr-calname")){
-		defaultCalendarName="New Calendar"
+	if(!vcal.getFirstProperty("x-wr-calname")) {
+		defaultCalendarName = "New Calendar"
 	}
 	calendar.name = defaultCalendarName;
 
@@ -268,15 +268,15 @@ function swap(arr, a: number, b: number) {
 	return arr;
 }
 
-function MyTextInput({ value, onBlur}) {
+function MyTextInput({ value, onBlur }) {
 	return <MyInputField value={value} onBlur={onBlur} type="text" min="" max="" style={{ width: "40%" }} />
 }
 
-function MyNumberInput({ value, onBlur, min, max}) {
+function MyNumberInput({ value, onBlur, min, max }) {
 	return <MyInputField value={value} onBlur={onBlur} type="number" min={min} max={max} style={{ width: "20%" }} />
 }
 
-function MyInputField({ value, onBlur, min, max, type, style}) {
+function MyInputField({ value, onBlur, min, max, type, style }) {
 	const [val, setVal] = useState(value);
 
 	useEffect(() => {
@@ -418,12 +418,12 @@ class Calendar {
 	items: CalendarEvent[]
 	name: string
 	private isMerged: boolean
-	width:number
+	width: number
 	constructor(name: string) {
 		this.items = [];
 		this.name = name;
 		this.isMerged = false;
-		this.width=1;
+		this.width = 1;
 	}
 
 	addEvent(ev: CalendarEvent) {
@@ -537,25 +537,46 @@ class Calendar {
 
 
 function CalendarPreview({ startOfCalendar, endOfCalendar, calendars }) {
+	const size = 0.8;
+	const preview = true;
+	const previewAmount = 8;
+
 	return MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
-		return <div style={{ width: "1100px" }} key={monthAndYear} id={monthAndYear}>
-			<MonthName monthAndYear={monthAndYear} />
-			<Table bordered>
+		return <div style={{ width: size * 1100 + "px" }} key={monthAndYear} id={monthAndYear}>
+			<p style={{ fontSize: size * 6 + "em" }} className="monthname">{Language.getMonthName(monthAndYear)}</p>
+			<Table bordered style={{
+				fontSize: 1.8 * size + "em",
+				verticalAlign: "middle",
+				padding:"0 px !important"
+			}}>
 				<thead>
-					<tr>
-						<th style={{ width: "10%" }}>Day</th>
-						{calendars.map((cal: Calendar, i:number) => {
-							return <th key={i} style={{ width: (90 / calendars.length)*cal.width + "%" }}>{cal.name}</th>;
+					<tr style={{fontSize:"1.2em"}}>
+						<th style={{ width: "10%", verticalAlign:"middle" }}>Day</th>
+						{calendars.map((cal: Calendar, i: number) => {
+							return <th key={i} style={{verticalAlign:"middle",
+							 width: (90 / calendars.length) * cal.width + "%" }}>{cal.name}</th>;
 						})}
 					</tr>
 				</thead>
 				<tbody>
-					{days.map((day: Time) => {
-						var tdstyle = { backgroundColor: day.day % 2 == 1 ? "#dedede" : "white" }
+					{days.map((day: Time, index:number) => {
+						if(preview){
+							if(index==previewAmount){
+								return <tr><td>...</td></tr>
+							}
+							if(index>previewAmount){
+								return;
+							}
+						}
+						var tdstyle = {
+							backgroundColor: day.day % 2 == 1 ? "#dedede" : "white",
+						}
 						return <tr key={day.toString()}>
-							<td className="day" style={tdstyle}>{Language.getWeekdayName(day).slice(0, 2) + " " + day.day.toString()}</td>
-							{calendars.map((cal: Calendar, i:number) => {
-								return <td key={i} style={tdstyle}>
+							<td className="day" style={{ ...tdstyle }}><b>
+								{Language.getWeekdayName(day).slice(0, 2) + " " + day.day.toString()}
+							</b></td>
+							{calendars.map((cal: Calendar, i: number) => {
+								return <td key={i} style={{ ...tdstyle, fontSize: "0.9em" }}>
 									{cal.getEvents(day).map((ev: CalendarEvent) => {
 										return ev.getFullSummary();
 									}).join(", ")
@@ -571,9 +592,6 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars }) {
 	});
 }
 
-function MonthName({ monthAndYear }) {
-	return <p className="monthname">{Language.getMonthName(monthAndYear)}</p>;
-}
 
 function downloadHTMLElementWithID(monthAndYear: string) {
 	html2canvas(document.getElementById(monthAndYear)!).then(canvas => {
