@@ -332,10 +332,25 @@ export function CalendarList() {
 				downloadHTMLElementWithID(monthAndYear, "renderedResult");
 			})
 		}}>Download</Button>
+		<Credits />
 		<Preview fontFamily={fontFamily} startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars} previewAmount={prevAmount} />
 		<Render fontFamily={fontFamily} startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars} />
 	</>
 
+}
+
+function Credits(){
+	return <div className="">
+			<h1>Info & Credits</h1>
+			<h2>ICal.js</h2>
+			<p>Used for parsing calendar data</p>
+			<h2>HTML2Canvas</h2>
+			<p>Used for rendering the calendar as a canvas element to be able to download it.</p>
+			<h2>Font "Please Write Me A Song"</h2>
+			<p style={{fontFamily:"PleaseWriteMeASong"}}>Created by Vanessa Bays @ http://bythebutterfly.com</p>
+			<h2>Other</h2>
+			<p>This Website was created with React using Bootstrap and is hosted on Github Pages.</p>
+	</div>
 }
 
 function swap(arr, a: number, b: number) {
