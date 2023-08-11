@@ -113,6 +113,69 @@ function ExampleEventList() {
 	}
 }
 
+const fonts = [
+	"PleaseWriteMeASong",
+	"monospace",
+	'Arial',
+	'Arial Black',
+	'Bahnschrift',
+	'Calibri',
+	'Cambria',
+	'Cambria Math',
+	'Candara',
+	'Comic Sans MS',
+	'Consolas',
+	'Constantia',
+	'Corbel',
+	'Courier New',
+	'Ebrima',
+	'Franklin Gothic Medium',
+	'Gabriola',
+	'Gadugi',
+	'Georgia',
+	'HoloLens MDL2 Assets',
+	'Impact',
+	'Ink Free',
+	'Javanese Text',
+	'Leelawadee UI',
+	'Lucida Console',
+	'Lucida Sans Unicode',
+	'Malgun Gothic',
+	'Marlett',
+	'Microsoft Himalaya',
+	'Microsoft JhengHei',
+	'Microsoft New Tai Lue',
+	'Microsoft PhagsPa',
+	'Microsoft Sans Serif',
+	'Microsoft Tai Le',
+	'Microsoft YaHei',
+	'Microsoft Yi Baiti',
+	'MingLiU-ExtB',
+	'Mongolian Baiti',
+	'MS Gothic',
+	'MV Boli',
+	'Myanmar Text',
+	'Nirmala UI',
+	'Palatino Linotype',
+	'Segoe MDL2 Assets',
+	'Segoe Print',
+	'Segoe Script',
+	'Segoe UI',
+	'Segoe UI Historic',
+	'Segoe UI Emoji',
+	'Segoe UI Symbol',
+	'SimSun',
+	'Sitka',
+	'Sylfaen',
+	'Symbol',
+	'Tahoma',
+	'Times New Roman',
+	'Trebuchet MS',
+	'Verdana',
+	'Webdings',
+	'Wingdings',
+	'Yu Gothic',
+];
 export function CalendarList() {
 	const [calendars, setCalendars] = useState([exampleReadICS(testcontent), exampleReadICS(testcontent2)]);
 
@@ -128,6 +191,8 @@ export function CalendarList() {
 	}))
 
 	const [prevAmount, setPrevAmount] = useState(4);
+
+	const [fontFamily, setFontFamily] = useState("PleaseWriteMeASong")
 
 	return <>
 		<h1>Upload Files</h1>
@@ -251,16 +316,24 @@ export function CalendarList() {
 		<h1>Result</h1>
 		<div className="d-flex justify-content-center">
 			<h2>Amount of days to preview: </h2>
-		<MyNumberInput value={prevAmount} onBlur={(e)=>{setPrevAmount(e.target.value)}} min="" max="" />
-
+			<MyNumberInput value={prevAmount} onBlur={(e) => { setPrevAmount(e.target.value) }} min="" max="" />
 		</div>
+
+		<Form.Select style={{ width: "20vw", fontFamily: fontFamily }} onChange={(e) => { setFontFamily(e.target.value) }}>
+			{
+				fonts.map((fontFam) => {
+					return <option style={{ fontFamily: fontFam }} value={fontFam}>{fontFam}</option>
+				})
+			}
+		</Form.Select>
+
 		<Button onClick={() => {
 			MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
 				downloadHTMLElementWithID(monthAndYear, "renderedResult");
 			})
 		}}>Download</Button>
-		<Preview startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars} previewAmount={prevAmount} />
-		<Render startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars} />
+		<Preview fontFamily={fontFamily} startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars} previewAmount={prevAmount} />
+		<Render fontFamily={fontFamily} startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars} />
 	</>
 
 }
@@ -544,29 +617,31 @@ class Calendar {
 
 }
 
-function Preview({ startOfCalendar, endOfCalendar, calendars, previewAmount }) {
+function Preview({ startOfCalendar, endOfCalendar, calendars, fontFamily, previewAmount }) {
 	return <CalendarPreview startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars}
 		size={0.8}
 		preview={true}
 		previewAmount={previewAmount}
+		fontFamily={fontFamily}
 	/>
 }
 
-function Render({ startOfCalendar, endOfCalendar, calendars }) {
+function Render({ startOfCalendar, endOfCalendar, calendars, fontFamily }) {
 	return <div id="renderedResult">
 		<CalendarPreview startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars}
-			size={2.8}
+			size={2.15}
 			preview={false}
+			fontFamily={fontFamily}
 		/>
 	</div>
 }
 
 
-function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, preview, previewAmount = 2 }) {
+function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, preview, previewAmount = 2, fontFamily = "PleaseWriteMeASong" }) {
 
 	return MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
-		return <div style={{ width: size * 1100 + "px" }} key={monthAndYear} className={monthAndYear}>
-			<h1 style={{ fontSize: size * 6 + "em", marginTop: size*0.05+"em", marginBottom:size*0.07+"em", contentVisibility:"visible !important" }} className="monthname">{Language.getMonthName(monthAndYear)}</h1>
+		return <div style={{ width: size * 1100 + "px" }} key={monthAndYear} className={"calendar " + monthAndYear}>
+			<h1 style={{ fontFamily: fontFamily, fontSize: size * 6 + "em", marginTop: size * 0.05 + "em", marginBottom: size * 0.07 + "em", contentVisibility: "visible !important" }} className="monthname">{Language.getMonthName(monthAndYear)}</h1>
 			<Table bordered style={{
 				fontSize: 1.8 * size + "em",
 				verticalAlign: "middle",
@@ -574,11 +649,12 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 			}}>
 				<thead>
 					<tr style={{ fontSize: "1.2em" }}>
-						<th style={{ width: "10%", verticalAlign: "middle" }}>Day</th>
+						<th style={{ width: "10%", verticalAlign: "middle", fontFamily: fontFamily }}>Day</th>
 						{calendars.map((cal: Calendar, i: number) => {
 							return <th key={i} style={{
 								verticalAlign: "middle",
-								width: (90 / calendars.length) * cal.width + "%"
+								width: (90 / calendars.length) * cal.width + "%",
+								fontFamily: fontFamily
 							}}>{cal.name}</th>;
 						})}
 					</tr>
@@ -595,13 +671,14 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 						}
 						var tdstyle = {
 							backgroundColor: day.day % 2 == 1 ? "#dedede" : "white",
+							fontFamily: fontFamily
 						}
 						return <tr key={day.toString()}>
 							<td className="day" style={{ ...tdstyle }}><b>
 								{Language.getWeekdayName(day).slice(0, 2) + " " + day.day.toString()}
 							</b></td>
 							{calendars.map((cal: Calendar, i: number) => {
-								return <td key={i} style={{ ...tdstyle, fontSize: "0.9em", whiteSpace:"nowrap" }}>
+								return <td key={i} style={{ ...tdstyle, fontSize: "0.9em", whiteSpace: "nowrap" }}>
 									{cal.getEvents(day).map((ev: CalendarEvent) => {
 										return ev.getFullSummary();
 									}).join(", ")
@@ -618,11 +695,11 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 }
 
 
-function downloadHTMLElementWithID(monthAndYear: string, parentID:string="") {
-	var parent = parentID!=""?document.getElementById(parentID)!:document
+function downloadHTMLElementWithID(monthAndYear: string, parentID: string = "") {
+	var parent = parentID != "" ? document.getElementById(parentID)! : document
 	var els = parent.getElementsByClassName(monthAndYear);
 	for(let i = 0; i < els.length; i++) {
-		html2canvas(els[i] as HTMLElement, {scrollX: -window.scrollX}).then(canvas => {
+		html2canvas(els[i] as HTMLElement, { scrollX: -window.scrollX }).then(canvas => {
 			var link = document.createElement('a');
 			link.download = 'calendar.png';
 			link.href = canvas.toDataURL();
