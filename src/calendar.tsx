@@ -166,11 +166,6 @@ export function CalendarList() {
 						nCal[index].name = e.target.value;
 						setCalendars(nCal)
 					}} />
-					<MyNumberInput min={0} max={1} value={cal.width} onBlur={(e) => {
-						const nCal = [...calendars];
-						nCal[index].width = e.target.value;
-						setCalendars(nCal)
-					}} />
 					<Button onClick={() => {
 						const nCal = [...calendars].filter((cal, ind) => {
 							return ind != index;
@@ -215,6 +210,11 @@ export function CalendarList() {
 							}}>Move Right</Button>
 						</>
 					}
+					<MyNumberInput min={0} max={1} value={cal.width} onBlur={(e) => {
+						const nCal = [...calendars];
+						nCal[index].width = e.target.value;
+						setCalendars(nCal)
+					}} />
 
 				</div>
 			})
