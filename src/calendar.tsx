@@ -161,9 +161,14 @@ export function CalendarList() {
 		{
 			calendars.map((cal, index) => {
 				return <div key={index} className="d-flex justify-content-center" style={{ gap: 10, margin: 15 }}>
-					<MyInput value={cal.name} onBlur={(e) => {
+					<MyTextInput value={cal.name} onBlur={(e) => {
 						const nCal = [...calendars];
 						nCal[index].name = e.target.value;
+						setCalendars(nCal)
+					}} />
+					<MyNumberInput min={0} max={1} value={cal.width} onBlur={(e) => {
+						const nCal = [...calendars];
+						nCal[index].width = e.target.value;
 						setCalendars(nCal)
 					}} />
 					<Button onClick={() => {
@@ -263,14 +268,22 @@ function swap(arr, a: number, b: number) {
 	return arr;
 }
 
-function MyInput({ value, onBlur }) {
+function MyTextInput({ value, onBlur}) {
+	return <MyInputField value={value} onBlur={onBlur} type="text" min="" max="" style={{ width: "40%" }} />
+}
+
+function MyNumberInput({ value, onBlur, min, max}) {
+	return <MyInputField value={value} onBlur={onBlur} type="number" min={min} max={max} style={{ width: "20%" }} />
+}
+
+function MyInputField({ value, onBlur, min, max, type, style}) {
 	const [val, setVal] = useState(value);
 
 	useEffect(() => {
 		setVal(value);
 	}, [value])
 
-	return <Form.Control style={{ width: "40%" }} value={val} onChange={(e) => {
+	return <Form.Control as={"input"} min={min} max={max} type={type} style={style} value={val} onChange={(e) => {
 		setVal(e.target.value)
 	}}
 		onBlur={onBlur}></Form.Control>
@@ -405,10 +418,12 @@ class Calendar {
 	items: CalendarEvent[]
 	name: string
 	private isMerged: boolean
+	width:number
 	constructor(name: string) {
 		this.items = [];
 		this.name = name;
 		this.isMerged = false;
+		this.width=1;
 	}
 
 	addEvent(ev: CalendarEvent) {
@@ -530,7 +545,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars }) {
 					<tr>
 						<th style={{ width: "10%" }}>Day</th>
 						{calendars.map((cal: Calendar, i:number) => {
-							return <th key={i} style={{ width: 90 / calendars.length + "%" }}>{cal.name}</th>;
+							return <th key={i} style={{ width: (90 / calendars.length)*cal.width + "%" }}>{cal.name}</th>;
 						})}
 					</tr>
 				</thead>
