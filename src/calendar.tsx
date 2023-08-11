@@ -693,7 +693,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 								{Language.getWeekdayName(day).slice(0, 2) + " " + day.day.toString()}
 							</b></td>
 							{calendars.map((cal: Calendar, i: number) => {
-								return <td key={i} style={{ ...tdstyle, fontSize: "0.9em", whiteSpace: "nowrap" }}>
+								return <td key={i} style={{ ...tdstyle, fontSize: "0.9em" }}>
 									{cal.getEvents(day).map((ev: CalendarEvent) => {
 										return ev.getFullSummary();
 									}).join(", ")
