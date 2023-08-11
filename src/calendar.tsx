@@ -11,11 +11,11 @@ const useUmlaute = true;
 const defaultLanguage: string = "de-DE";
 const nicerTrashcanNames = true;
 const trashcanNameReplacements = {
-	"Restabfallbehälter": "🖤 Restmüll",
-	"Gelbe Grossbehälter": "💛 Große Gelbe Tonne",
-	"Gelbe Behälter": "💛 Gelbe Tonne",
-	"Bioabfallbehälter": "💚 Grüne Tonne",
-	"Papierbehälter": "💙 Blaue Tonne",
+	"Restabfallbehaelter": "Restmüll",
+	"Gelbe Grossbehaelter": "Große Gelbe Tonne",
+	"Gelbe Behaelter": "Gelbe Tonne",
+	"Bioabfallbehaelter": "Grüne Tonne",
+	"Papierbehaelter": "Blaue Tonne",
 }
 
 export function exampleReadICS(textcontent) {
@@ -253,13 +253,13 @@ class CalendarEvent {
 	}
 
 	private prettierSummary() {
-		if(useUmlaute) {
-			this.summary = this.summary.replaceAll("ae", "ä");
-		}
 		if(nicerTrashcanNames) {
 			Object.keys(trashcanNameReplacements).forEach((key) => {
 				this.summary = this.summary.replaceAll(key, trashcanNameReplacements[key]);
 			});
+		}
+		if(useUmlaute) {
+			this.summary = this.summary.replaceAll("ae", "ä");
 		}
 	}
 
