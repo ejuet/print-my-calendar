@@ -127,6 +127,8 @@ export function CalendarList() {
 		day: 31
 	}))
 
+	const [prevAmount, setPrevAmount] = useState(4);
+
 	return <>
 		<h1>Upload Files</h1>
 		<input
@@ -245,13 +247,20 @@ export function CalendarList() {
 			setEnd(t.clone());
 		}} />
 
+
 		<h1>Result</h1>
+		<div className="d-flex justify-content-center">
+			<h2>Amount of days to preview: </h2>
+		<MyNumberInput value={prevAmount} onBlur={(e)=>{setPrevAmount(e.target.value)}} min="" max="" />
+
+		</div>
 		<Button onClick={() => {
 			MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
-				downloadHTMLElementWithID(monthAndYear);
+				downloadHTMLElementWithID(monthAndYear, "renderedResult");
 			})
 		}}>Download</Button>
-		<CalendarPreview startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars} />
+		<Preview startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars} previewAmount={prevAmount} />
+		<Render startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars} />
 	</>
 
 }
@@ -535,36 +544,52 @@ class Calendar {
 
 }
 
+function Preview({ startOfCalendar, endOfCalendar, calendars, previewAmount }) {
+	return <CalendarPreview startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars}
+		size={0.8}
+		preview={true}
+		previewAmount={previewAmount}
+	/>
+}
 
-function CalendarPreview({ startOfCalendar, endOfCalendar, calendars }) {
-	const size = 0.8;
-	const preview = true;
-	const previewAmount = 8;
+function Render({ startOfCalendar, endOfCalendar, calendars }) {
+	return <div id="renderedResult">
+		<CalendarPreview startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars}
+			size={2.8}
+			preview={false}
+		/>
+	</div>
+}
+
+
+function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, preview, previewAmount = 2 }) {
 
 	return MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
-		return <div style={{ width: size * 1100 + "px" }} key={monthAndYear} id={monthAndYear}>
-			<p style={{ fontSize: size * 6 + "em" }} className="monthname">{Language.getMonthName(monthAndYear)}</p>
+		return <div style={{ width: size * 1100 + "px" }} key={monthAndYear} className={monthAndYear}>
+			<h1 style={{ fontSize: size * 6 + "em", marginTop: size*0.05+"em", marginBottom:size*0.07+"em", contentVisibility:"visible !important" }} className="monthname">{Language.getMonthName(monthAndYear)}</h1>
 			<Table bordered style={{
 				fontSize: 1.8 * size + "em",
 				verticalAlign: "middle",
-				padding:"0 px !important"
+				padding: "0 px !important"
 			}}>
 				<thead>
-					<tr style={{fontSize:"1.2em"}}>
-						<th style={{ width: "10%", verticalAlign:"middle" }}>Day</th>
+					<tr style={{ fontSize: "1.2em" }}>
+						<th style={{ width: "10%", verticalAlign: "middle" }}>Day</th>
 						{calendars.map((cal: Calendar, i: number) => {
-							return <th key={i} style={{verticalAlign:"middle",
-							 width: (90 / calendars.length) * cal.width + "%" }}>{cal.name}</th>;
+							return <th key={i} style={{
+								verticalAlign: "middle",
+								width: (90 / calendars.length) * cal.width + "%"
+							}}>{cal.name}</th>;
 						})}
 					</tr>
 				</thead>
 				<tbody>
-					{days.map((day: Time, index:number) => {
-						if(preview){
-							if(index==previewAmount){
+					{days.map((day: Time, index: number) => {
+						if(preview) {
+							if(index == previewAmount) {
 								return <tr><td>...</td></tr>
 							}
-							if(index>previewAmount){
+							if(index > previewAmount) {
 								return;
 							}
 						}
@@ -576,7 +601,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars }) {
 								{Language.getWeekdayName(day).slice(0, 2) + " " + day.day.toString()}
 							</b></td>
 							{calendars.map((cal: Calendar, i: number) => {
-								return <td key={i} style={{ ...tdstyle, fontSize: "0.9em" }}>
+								return <td key={i} style={{ ...tdstyle, fontSize: "0.9em", whiteSpace:"nowrap" }}>
 									{cal.getEvents(day).map((ev: CalendarEvent) => {
 										return ev.getFullSummary();
 									}).join(", ")
@@ -593,13 +618,18 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars }) {
 }
 
 
-function downloadHTMLElementWithID(monthAndYear: string) {
-	html2canvas(document.getElementById(monthAndYear)!).then(canvas => {
-		var link = document.createElement('a');
-		link.download = 'calendar.png';
-		link.href = canvas.toDataURL();
-		link.click();
-	});
+function downloadHTMLElementWithID(monthAndYear: string, parentID:string="") {
+	var parent = parentID!=""?document.getElementById(parentID)!:document
+	var els = parent.getElementsByClassName(monthAndYear);
+	for(let i = 0; i < els.length; i++) {
+		html2canvas(els[i] as HTMLElement, {scrollX: -window.scrollX}).then(canvas => {
+			var link = document.createElement('a');
+			link.download = 'calendar.png';
+			link.href = canvas.toDataURL();
+			link.click();
+		});
+	}
+
 }
 
 function getDaysBetween(start: Time, end: Time) {
