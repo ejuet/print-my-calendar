@@ -4,8 +4,9 @@ import { testcontent } from './testics';
 import { testcontent2 } from './testics2';
 import React, { useEffect, useState } from "react";
 import html2canvas from "html2canvas";
-import { Button, Table, Form, Container } from "react-bootstrap";
+import { Button, Table, Form, Container, DropdownButton } from "react-bootstrap";
 import userEvent from "@testing-library/user-event";
+import DropdownItem from "react-bootstrap/esm/DropdownItem";
 
 const useUmlaute = true;
 const defaultLanguage: string = "de-DE";
@@ -26,7 +27,7 @@ export function exampleReadICS(textcontent) {
 
 	var vcal = new Component(data);
 
-	var defaultCalendarName = vcal.getFirstProperty("x-wr-calname").getFirstValue();
+	var defaultCalendarName = vcal.getFirstProperty("x-wr-calname")?.getFirstValue();
 	calendar.name = defaultCalendarName;
 
 	var events = vcal.getAllSubcomponents("vevent");
@@ -156,18 +157,38 @@ export function CalendarList() {
 
 		{
 			calendars.map((cal, index) => {
-				return <div >
-					<input style={{ width: "40%" }} defaultValue={cal.name} onBlur={(e) => {
+				return <div className="d-flex justify-content-center" style={{gap:10, margin: 15}}>
+					<MyInput value={cal.name} onBlur={(e)=>{
 						const nCal = [...calendars];
 						nCal[index].name = e.target.value;
 						setCalendars(nCal)
-					}}></input>
+					}} />
 					<Button onClick={() => {
 						const nCal = [...calendars].filter((cal, ind) => {
 							return ind != index;
 						})
 						setCalendars(nCal)
 					}}>X</Button>
+					{
+						calendars.filter((c) => { return c != cal }).length > 0 &&
+
+						<DropdownButton title="Merge">
+							{
+								calendars.map((other) => {
+									if(other != cal) {
+										return <DropdownItem onClick={() => {
+											cal.insertOtherCalendar(other)
+											setCalendars(oldCals => [...oldCals.filter((o) => { return o != other })])
+										}}>
+											Merge with {other.name}
+										</DropdownItem>
+									}
+								})
+							}
+
+						</DropdownButton>
+					}
+
 				</div>
 			})
 		}
@@ -208,6 +229,19 @@ export function CalendarList() {
 
 }
 
+function MyInput({value, onBlur}){
+	const [val, setVal] = useState(value);
+
+	useEffect(()=>{
+		setVal(value);
+	}, [value])
+
+	return <Form.Control style={{ width: "40%" }} value={val} onChange={(e) => {
+		setVal(e.target.value)
+	}}
+	onBlur={onBlur}></Form.Control>
+}
+
 function DatePicker({ onNewDate, defaultYear, defaultMonth, defaultDay }) {
 	const [year, setYear] = useState(defaultYear);
 	const [day, setDay] = useState(defaultDay);
@@ -218,7 +252,7 @@ function DatePicker({ onNewDate, defaultYear, defaultMonth, defaultDay }) {
 	}, [year, month, day])
 
 	return <Container>
-		<div className="d-flex  justify-content-center">
+		<div className="d-flex  justify-content-center" style={{gap:10, margin: 15}}>
 			<Form.Control onBlur={(e) => { setYear(parseInt(e.target.value)) }} type="number" defaultValue={year}></Form.Control>
 			<Form.Select defaultValue={month} onChange={(e) => { setMonth(parseInt(e.target.value)) }}>
 				{
@@ -341,6 +375,11 @@ class Calendar {
 	}
 	getLatestEndDate() {
 		return this.getMinMaxEndDate(-1);
+	}
+
+	insertOtherCalendar(other: Calendar) {
+		this.name += " & " + other.name;
+		this.items = this.items.concat(other.items);
 	}
 
 	/*
