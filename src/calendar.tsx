@@ -172,6 +172,10 @@ export function CalendarList() {
 			})
 		}
 
+		<Button onClick={() => {
+			setCalendars(oldCalendars => [...oldCalendars, new Calendar("New Calendar")])
+		}}>Add Empty Calendar</Button>
+
 		{
 			/*
 				<h3>Calendar for year</h3>
@@ -369,7 +373,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars }) {
 					{days.map((day: Time) => {
 						var tdstyle = { backgroundColor: day.day % 2 == 1 ? "#dedede" : "white" }
 						return <tr key={day.toString()}>
-							<td className="day" style={tdstyle}>{Language.getWeekdayName(day).slice(0, 2)+ " "+day.day.toString() }</td>
+							<td className="day" style={tdstyle}>{Language.getWeekdayName(day).slice(0, 2) + " " + day.day.toString()}</td>
 							{calendars.map((cal: Calendar) => {
 								return <td style={tdstyle}>
 									{cal.getEvents(day).map((ev: CalendarEvent) => {
@@ -387,7 +391,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars }) {
 	});
 }
 
-function MonthName({monthAndYear}){
+function MonthName({ monthAndYear }) {
 	return <p className="monthname">{Language.getMonthName(monthAndYear)}</p>;
 }
 
