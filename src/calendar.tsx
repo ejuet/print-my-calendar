@@ -277,24 +277,37 @@ class CalendarEvent {
 	duration: any;
 	durationInSeconds: number;
 	endDate: any;
+	private istrash:boolean;
 	constructor(startDate: any, duration: any, summary: string) {
 		this.startDate = startDate;
 		this.durationInSeconds = duration.toSeconds();
 		this.summary = summary.trim();
 		this.endDate = startDate.clone();
 		this.endDate.addDuration(duration);
-		this.prettierSummary();
+
+		this.istrash=false;
+		for(let i=0; i<Object.keys(trashcanNameReplacements).length; i++){
+			if(this.summary===Object.keys(trashcanNameReplacements)[i]){
+				this.istrash = true;
+			}
+		}
 	}
 
-	private prettierSummary() {
+	private getPrettierSummary() {
+		var s = this.summary;
 		if(nicerTrashcanNames) {
 			Object.keys(trashcanNameReplacements).forEach((key) => {
-				this.summary = this.summary.replaceAll(key, trashcanNameReplacements[key]);
+				s = s.replaceAll(key, trashcanNameReplacements[key]);
 			});
 		}
 		if(useUmlaute) {
-			this.summary = this.summary.replaceAll("ae", "ä");
+			s = s.replaceAll("ae", "ä");
 		}
+		return s;
+	}
+
+	isTrash(){
+		return this.istrash;
 	}
 
 	isToday(date: Time) {
@@ -302,17 +315,46 @@ class CalendarEvent {
 		return date.compareDateOnlyTz(this.startDate, utcTimezone) >= 0 && date.compareDateOnlyTz(this.endDate, utcTimezone) <= 0
 	}
 
+	isMultipleDaysLong(){
+		return (this.startDate.compareDateOnlyTz(this.endDate, Timezone.localTimezone)<0)
+	}
+
+	isBeginningDate(date: Time){
+		return this.isMultipleDaysLong() && (this.startDate.compareDateOnlyTz(date, Timezone.localTimezone)==0);
+	}
+
+	isEndDate(date: Time){
+		return this.isMultipleDaysLong() && (this.endDate.compareDateOnlyTz(date, Timezone.localTimezone)==0);
+	}
+
 	getFullSummary() {
 		const startTime = this.startDate.hour != 0 || this.startDate.minute != 0 || this.startDate.second != 0 ?
 			this.startDate.toJSDate().toLocaleTimeString(defaultLanguage) : "";
 
 		const endTime = this.endDate.hour != 0 || this.endDate.minute != 0 || this.endDate.second != 0 ?
-			"bis " + this.endDate.toJSDate().toLocaleTimeString(defaultLanguage) : "";
+			this.endDate.toJSDate().toLocaleTimeString(defaultLanguage) : "";
 
-		const zeit = startTime != "" && endTime != "" ?
+		var zeit ="";
+
+		if(startTime!="" && endTime==""){
+			zeit = "ab "+ startTime;
+		}
+		else if(startTime=="" && endTime!=""){
+			zeit = "bis "+endTime
+		}
+		else if(startTime!=""&&endTime!=""){
+			zeit = startTime+" bis "+endTime
+		}
+
+		if(zeit!=""){
+			zeit=" ("+zeit+")"
+		}
+		/*
+			const zeit = startTime != "" || endTime != "" ?
 			" (" + startTime + " " + endTime + ")" : "";
+			*/
 
-		return this.summary + zeit;
+		return this.getPrettierSummary() + zeit;
 	}
 
 }
@@ -333,8 +375,26 @@ class Calendar {
 		var today: CalendarEvent[];
 		today = []
 		for(let i = 0; i < this.items.length; i++) {
-			if(this.items[i].isToday(date)) {
-				today.push(this.items[i]);
+			var e = this.items[i];
+			if(e.isMultipleDaysLong() && !e.isTrash()){
+				if(e.isBeginningDate(date)){
+					var cl = Object.create(e);
+					cl.summary = "Beginn von "+cl.getPrettierSummary();
+					cl.endDate = new Time();
+					today.push(cl)
+				}
+				else if(e.isEndDate(date)){
+					var cl = Object.create(e);
+					cl.summary = "Ende von "+cl.getPrettierSummary();
+					cl.startDate = new Time();
+					today.push(cl)
+				}
+			}
+			else{
+				if(e.isToday(date)) {
+					today.push(this.items[i]);
+					
+				}
 			}
 		}
 		return today;
