@@ -348,13 +348,13 @@ export function CalendarList() {
 
 		<Button onClick={() => {
 			MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
-				downloadHTMLElementWithID(monthAndYear, "renderedResult");
+				downloadHTMLElementWithID(monthAndYear);
 			})
 		}}>Download</Button>
 		<Credits />
 
 		<h1>Result</h1>
-		<Result
+		<Preview
 			fontFamily={fontFamily}
 			startOfCalendar={startOfCalendar}
 			endOfCalendar={endOfCalendar}
@@ -757,10 +757,10 @@ function downloadHTMLElementWithID(monthAndYear: string, parentID: string = "") 
 		parent.style.setProperty("display", "block")
 	}
 	for(let i = 0; i < els.length; i++) {
-		html2canvas(els[i] as HTMLElement, { scrollX: -window.scrollX }).then(canvas => {
+		html2canvas(els[i] as HTMLElement, { scrollX: -window.scrollX, scale:6 }).then(canvas => {
 			var link = document.createElement('a');
-			link.download = monthAndYear + '.png';
-			link.href = canvas.toDataURL();
+			link.download = monthAndYear + '.jpg';
+			link.href = canvas.toDataURL("image/jpeg",0.9);
 			link.click();
 		});
 	}
