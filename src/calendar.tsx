@@ -328,7 +328,7 @@ export function CalendarList() {
 			<MyNumberInput value={fontSizeHeading} onBlur={(e) => { setFontSizeHeading(e.target.value) }} min="0" max="" />
 		</div>
 
-		<div className="d-flex justify-content-center" style={{ gap: 10, margin:7 }}>
+		<div style={{ gap: 10, margin:7, display:"none" }} >
 			<h2>Amount of days to preview:</h2>
 			<MyNumberInput value={prevAmount} onBlur={(e) => { setPrevAmount(e.target.value) }} min="" max="" />
 		</div>
