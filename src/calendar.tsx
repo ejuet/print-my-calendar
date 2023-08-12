@@ -194,8 +194,8 @@ export function CalendarList() {
 
 	const [fontFamily, setFontFamily] = useState("PleaseWriteMeASong")
 
-	const [calendarWidth, setCalendarWidth] = useState(100);
-	const [lineHeight, setLineHeight] = useState(100);
+	const [fontSize, setFontSize] = useState(100);
+	const [fontSizeHeading, setFontSizeHeading] = useState(100);
 
 	return <>
 		<h1>Upload Files</h1>
@@ -319,13 +319,13 @@ export function CalendarList() {
 		<h1>Display Settings</h1>
 
 		<div className="d-flex justify-content-center" style={{ gap: 10, margin:7 }}>
-			<h2>Calendar Width (%):</h2>
-			<MyNumberInput value={calendarWidth} onBlur={(e) => { setCalendarWidth(e.target.value) }} min="0" max="" />
+			<h2>Font Size (%):</h2>
+			<MyNumberInput value={fontSize} onBlur={(e) => { setFontSize(e.target.value) }} min="0" max="" />
 		</div>
 
 		<div className="d-flex justify-content-center" style={{ gap: 10, margin:7 }}>
-			<h2>Line Height (%):</h2>
-			<MyNumberInput value={lineHeight} onBlur={(e) => { setLineHeight(e.target.value) }} min="0" max="" />
+			<h2>Font Size Heading (%):</h2>
+			<MyNumberInput value={fontSizeHeading} onBlur={(e) => { setFontSizeHeading(e.target.value) }} min="0" max="" />
 		</div>
 
 		<div className="d-flex justify-content-center" style={{ gap: 10, margin:7 }}>
@@ -360,8 +360,8 @@ export function CalendarList() {
 			endOfCalendar={endOfCalendar}
 			calendars={calendars}
 			previewAmount={prevAmount}
-			calendarWidth={calendarWidth}
-			lineHeight={lineHeight}
+			fontSize={fontSize}
+			fontSizeHeading={fontSizeHeading}
 		/>
 	</>
 
@@ -687,7 +687,10 @@ function Render(props) {
 }
 
 
-function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, preview, previewAmount = 2, fontFamily = "PleaseWriteMeASong", lineHeight = 100, calendarWidth = 100 }) {
+function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, preview, previewAmount = 2,
+	fontFamily = "PleaseWriteMeASong", lineHeight = 220, calendarWidth = 100,
+	fontSize=100, fontSizeHeading=100
+}) {
 
 	return MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
 		return <div style={{ width: size * 1100 * (calendarWidth / 100) + "px", margin: "auto" }} key={monthAndYear} className={"calendar " + monthAndYear}>
@@ -699,7 +702,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 				fontFamily: fontFamily,
 			}}>
 				<thead>
-					<tr style={{ fontSize: "1.2em" }}>
+					<tr style={{ fontSize: 1.2*(fontSizeHeading/100)+"em" }}>
 						<th style={{ width: "10%", verticalAlign: "middle" }}>Day</th>
 						{calendars.map((cal: Calendar, i: number) => {
 							return <th key={i} style={{
@@ -729,7 +732,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 								{Language.getWeekdayName(day).slice(0, 2) + " " + day.day.toString()}
 							</b></td>
 							{calendars.map((cal: Calendar, i: number) => {
-								return <td key={i} style={{ ...tdstyle, fontSize: "0.9em" }}>
+								return <td key={i} style={{ ...tdstyle, fontSize: 0.9*(fontSize/100)+"em" }}>
 									{cal.getEvents(day).map((ev: CalendarEvent) => {
 										return ev.getFullSummary();
 									}).join(", ")
