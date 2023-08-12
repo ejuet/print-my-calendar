@@ -194,6 +194,9 @@ export function CalendarList() {
 
 	const [fontFamily, setFontFamily] = useState("PleaseWriteMeASong")
 
+	const [calendarWidth, setCalendarWidth] = useState(100);
+	const [lineHeight, setLineHeight] = useState(100);
+
 	return <>
 		<h1>Upload Files</h1>
 		<input
@@ -314,18 +317,34 @@ export function CalendarList() {
 
 
 		<h1>Result</h1>
-		<div className="d-flex justify-content-center">
-			<h2>Amount of days to preview: </h2>
+
+		<div className="d-flex justify-content-center" style={{ gap: 10, margin:7 }}>
+			<h2>Calendar Width (%):</h2>
+			<MyNumberInput value={calendarWidth} onBlur={(e) => { setCalendarWidth(e.target.value) }} min="0" max="" />
+		</div>
+
+		<div className="d-flex justify-content-center" style={{ gap: 10, margin:7 }}>
+			<h2>Line Height (%):</h2>
+			<MyNumberInput value={lineHeight} onBlur={(e) => { setLineHeight(e.target.value) }} min="0" max="" />
+		</div>
+
+		<div className="d-flex justify-content-center" style={{ gap: 10, margin:7 }}>
+			<h2>Amount of days to preview:</h2>
 			<MyNumberInput value={prevAmount} onBlur={(e) => { setPrevAmount(e.target.value) }} min="" max="" />
 		</div>
 
-		<Form.Select style={{ width: "20vw", fontFamily: fontFamily }} onChange={(e) => { setFontFamily(e.target.value) }}>
-			{
-				fonts.map((fontFam) => {
-					return <option style={{ fontFamily: fontFam }} value={fontFam}>{fontFam}</option>
-				})
-			}
-		</Form.Select>
+		<div className="d-flex justify-content-center" style={{ gap: 10, margin:7 }}>
+			<h2>Font:</h2>
+			<Form.Select style={{ width: "20vw", fontFamily: fontFamily }} onChange={(e) => { setFontFamily(e.target.value) }}>
+				{
+					fonts.map((fontFam) => {
+						return <option style={{ fontFamily: fontFam }} value={fontFam}>{fontFam}</option>
+					})
+				}
+			</Form.Select>
+		</div>
+
+
 
 		<Button onClick={() => {
 			MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
@@ -333,10 +352,24 @@ export function CalendarList() {
 			})
 		}}>Download</Button>
 		<Credits />
-		<div className="w-100">
-			<Preview fontFamily={fontFamily} startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars} previewAmount={prevAmount} />
-		</div>
-		<Render fontFamily={fontFamily} startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars} />
+
+		<Result
+			fontFamily={fontFamily}
+			startOfCalendar={startOfCalendar}
+			endOfCalendar={endOfCalendar}
+			calendars={calendars}
+			previewAmount={prevAmount}
+			calendarWidth={calendarWidth}
+			lineHeight={lineHeight}
+		/>
+	</>
+
+}
+
+function Result(props) {
+	return <>
+		<Preview {...props} />
+		<Render {...props} />
 	</>
 
 }
@@ -634,44 +667,44 @@ class Calendar {
 
 }
 
-function Preview({ startOfCalendar, endOfCalendar, calendars, fontFamily, previewAmount }) {
-	return <CalendarPreview startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars}
+function Preview(props) {
+	return <CalendarPreview
 		size={0.8}
 		preview={true}
-		previewAmount={previewAmount}
-		fontFamily={fontFamily}
+		{...props}
 	/>
 }
 
-function Render({ startOfCalendar, endOfCalendar, calendars, fontFamily }) {
+function Render(props) {
 	return <div id="renderedResult" style={{ display: "none" }}>
-		<CalendarPreview startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars}
+		<CalendarPreview
 			size={2.15}
 			preview={false}
-			fontFamily={fontFamily}
+			{...props}
 		/>
 	</div>
 }
 
 
-function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, preview, previewAmount = 2, fontFamily = "PleaseWriteMeASong" }) {
+function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, preview, previewAmount = 2, fontFamily = "PleaseWriteMeASong", lineHeight = 100, calendarWidth = 100 }) {
 
 	return MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
-		return <div style={{ width: size * 1100 + "px", margin:"auto" }} key={monthAndYear} className={"calendar " + monthAndYear}>
+		return <div style={{ width: size * 1100 * (calendarWidth / 100) + "px", margin: "auto" }} key={monthAndYear} className={"calendar " + monthAndYear}>
 			<h1 style={{ fontFamily: fontFamily, fontSize: size * 6 + "em", marginTop: size * 0.05 + "em", marginBottom: size * 0.07 + "em", contentVisibility: "visible !important" }} className="monthname">{Language.getMonthName(monthAndYear)}</h1>
 			<Table bordered style={{
 				fontSize: 1.8 * size + "em",
 				verticalAlign: "middle",
-				padding: "0 px !important"
+				padding: "0 px !important",
+				fontFamily: fontFamily,
 			}}>
 				<thead>
 					<tr style={{ fontSize: "1.2em" }}>
-						<th style={{ width: "10%", verticalAlign: "middle", fontFamily: fontFamily }}>Day</th>
+						<th style={{ width: "10%", verticalAlign: "middle" }}>Day</th>
 						{calendars.map((cal: Calendar, i: number) => {
 							return <th key={i} style={{
 								verticalAlign: "middle",
 								width: (90 / calendars.length) * cal.width + "%",
-								fontFamily: fontFamily
+								height: (lineHeight / 100) * 65 + "px"
 							}}>{cal.name}</th>;
 						})}
 					</tr>
@@ -688,7 +721,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 						}
 						var tdstyle = {
 							backgroundColor: day.day % 2 == 1 ? "#dedede" : "white",
-							fontFamily: fontFamily
+							height: (lineHeight / 100) * 40 + "px"
 						}
 						return <tr key={day.toString()}>
 							<td className="day" style={{ ...tdstyle }}><b>
@@ -722,7 +755,7 @@ function downloadHTMLElementWithID(monthAndYear: string, parentID: string = "") 
 	for(let i = 0; i < els.length; i++) {
 		html2canvas(els[i] as HTMLElement, { scrollX: -window.scrollX }).then(canvas => {
 			var link = document.createElement('a');
-			link.download = monthAndYear+'.png';
+			link.download = monthAndYear + '.png';
 			link.href = canvas.toDataURL();
 			link.click();
 		});
