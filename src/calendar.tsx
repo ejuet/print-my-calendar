@@ -181,7 +181,7 @@ export function CalendarList() {
 
 	const [startOfCalendar, setStart] = useState(new Time({
 		year: 2023,
-		month: 8,
+		month: 1,
 		day: 1
 	}))
 	const [endOfCalendar, setEnd] = useState(new Time({
@@ -333,23 +333,25 @@ export function CalendarList() {
 			})
 		}}>Download</Button>
 		<Credits />
-		<Preview fontFamily={fontFamily} startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars} previewAmount={prevAmount} />
+		<div className="w-100">
+			<Preview fontFamily={fontFamily} startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars} previewAmount={prevAmount} />
+		</div>
 		<Render fontFamily={fontFamily} startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars} />
 	</>
 
 }
 
-function Credits(){
+function Credits() {
 	return <div className="">
-			<h1>Info & Credits</h1>
-			<h2>ICal.js</h2>
-			<p>Used for parsing calendar data</p>
-			<h2>HTML2Canvas</h2>
-			<p>Used for rendering the calendar as a canvas element to be able to download it.</p>
-			<h2>Font "Please Write Me A Song"</h2>
-			<p style={{fontFamily:"PleaseWriteMeASong"}}>Created by Vanessa Bays @ http://bythebutterfly.com</p>
-			<h2>Other</h2>
-			<p>This Website was created with React using Bootstrap and is hosted on Github Pages.</p>
+		<h1>Info & Credits</h1>
+		<h2>ICal.js</h2>
+		<p>Used for parsing calendar data</p>
+		<h2>HTML2Canvas</h2>
+		<p>Used for rendering the calendar as a canvas element to be able to download it.</p>
+		<h2>Font "Please Write Me A Song"</h2>
+		<p style={{ fontFamily: "PleaseWriteMeASong" }}>Created by Vanessa Bays @ http://bythebutterfly.com</p>
+		<h2>Other</h2>
+		<p>This Website was created with React using Bootstrap and is hosted on Github Pages.</p>
 	</div>
 }
 
@@ -642,7 +644,7 @@ function Preview({ startOfCalendar, endOfCalendar, calendars, fontFamily, previe
 }
 
 function Render({ startOfCalendar, endOfCalendar, calendars, fontFamily }) {
-	return <div id="renderedResult">
+	return <div id="renderedResult" style={{ display: "none" }}>
 		<CalendarPreview startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} calendars={calendars}
 			size={2.15}
 			preview={false}
@@ -655,7 +657,7 @@ function Render({ startOfCalendar, endOfCalendar, calendars, fontFamily }) {
 function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, preview, previewAmount = 2, fontFamily = "PleaseWriteMeASong" }) {
 
 	return MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
-		return <div style={{ width: size * 1100 + "px" }} key={monthAndYear} className={"calendar " + monthAndYear}>
+		return <div style={{ width: size * 1100 + "px", margin:"auto" }} key={monthAndYear} className={"calendar " + monthAndYear}>
 			<h1 style={{ fontFamily: fontFamily, fontSize: size * 6 + "em", marginTop: size * 0.05 + "em", marginBottom: size * 0.07 + "em", contentVisibility: "visible !important" }} className="monthname">{Language.getMonthName(monthAndYear)}</h1>
 			<Table bordered style={{
 				fontSize: 1.8 * size + "em",
@@ -711,15 +713,22 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 
 
 function downloadHTMLElementWithID(monthAndYear: string, parentID: string = "") {
-	var parent = parentID != "" ? document.getElementById(parentID)! : document
-	var els = parent.getElementsByClassName(monthAndYear);
+	var els = document.getElementsByClassName(monthAndYear);
+	if(parentID != "") {
+		var parent = document.getElementById(parentID)! as HTMLElement;
+		els = parent.getElementsByClassName(monthAndYear);
+		parent.style.setProperty("display", "block")
+	}
 	for(let i = 0; i < els.length; i++) {
 		html2canvas(els[i] as HTMLElement, { scrollX: -window.scrollX }).then(canvas => {
 			var link = document.createElement('a');
-			link.download = 'calendar.png';
+			link.download = monthAndYear+'.png';
 			link.href = canvas.toDataURL();
 			link.click();
 		});
+	}
+	if(parentID != "") {
+		(document.getElementById(parentID)! as HTMLElement).style.setProperty("display", "none")
 	}
 
 }
