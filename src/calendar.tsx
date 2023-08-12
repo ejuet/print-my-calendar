@@ -190,7 +190,7 @@ export function CalendarList() {
 		day: 31
 	}))
 
-	const [prevAmount, setPrevAmount] = useState(4);
+	const [prevAmount, setPrevAmount] = useState(31);
 
 	const [fontFamily, setFontFamily] = useState("PleaseWriteMeASong")
 
@@ -316,7 +316,7 @@ export function CalendarList() {
 		}} />
 
 
-		<h1>Result</h1>
+		<h1>Display Settings</h1>
 
 		<div className="d-flex justify-content-center" style={{ gap: 10, margin:7 }}>
 			<h2>Calendar Width (%):</h2>
@@ -353,6 +353,7 @@ export function CalendarList() {
 		}}>Download</Button>
 		<Credits />
 
+		<h1>Result</h1>
 		<Result
 			fontFamily={fontFamily}
 			startOfCalendar={startOfCalendar}
@@ -690,7 +691,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 
 	return MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
 		return <div style={{ width: size * 1100 * (calendarWidth / 100) + "px", margin: "auto" }} key={monthAndYear} className={"calendar " + monthAndYear}>
-			<h1 style={{ fontFamily: fontFamily, fontSize: size * 6 + "em", marginTop: size * 0.05 + "em", marginBottom: size * 0.07 + "em", contentVisibility: "visible !important" }} className="monthname">{Language.getMonthName(monthAndYear)}</h1>
+			<p style={{ fontFamily: fontFamily, fontSize: size * 6 *(calendarWidth/100) + "em", marginTop: size * 0.05 + "em", marginBottom: size * 0.07 + "em", contentVisibility: "visible !important" }} className="monthname">{Language.getMonthName(monthAndYear)}</p>
 			<Table bordered style={{
 				fontSize: 1.8 * size + "em",
 				verticalAlign: "middle",
@@ -704,7 +705,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 							return <th key={i} style={{
 								verticalAlign: "middle",
 								width: (90 / calendars.length) * cal.width + "%",
-								height: (lineHeight / 100) * 65 + "px"
+								height: (lineHeight / 100) * 55 *size + "px"
 							}}>{cal.name}</th>;
 						})}
 					</tr>
@@ -721,7 +722,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 						}
 						var tdstyle = {
 							backgroundColor: day.day % 2 == 1 ? "#dedede" : "white",
-							height: (lineHeight / 100) * 40 + "px"
+							height: (lineHeight / 100) * 40 *size + "px"
 						}
 						return <tr key={day.toString()}>
 							<td className="day" style={{ ...tdstyle }}><b>
