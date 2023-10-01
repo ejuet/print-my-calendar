@@ -27,6 +27,15 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
+a{
+  text-decoration: inherit !important;
+  /* color: inherit !important; */
+}
+
+.active {
+  font-weight:600;
+}
+
 /*
 .monthname{
   font-size: 70px;
