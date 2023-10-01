@@ -4,9 +4,12 @@ import { testcontent } from './testics';
 import { testcontent2 } from './testics2';
 import React, { useEffect, useState } from "react";
 import html2canvas from "html2canvas";
-import { Button, Table, Form, Container, DropdownButton } from "react-bootstrap";
+import { Button, Table, Form, Container, DropdownButton, Accordion } from "react-bootstrap";
 import userEvent from "@testing-library/user-event";
 import DropdownItem from "react-bootstrap/esm/DropdownItem";
+import AccordionHeader from "react-bootstrap/esm/AccordionHeader";
+import AccordionBody from "react-bootstrap/esm/AccordionBody";
+import AccordionItem from "react-bootstrap/esm/AccordionItem";
 
 const useUmlaute = true;
 const defaultLanguage: string = "de-DE";
@@ -198,101 +201,196 @@ export function CalendarList() {
 	const [fontSizeHeading, setFontSizeHeading] = useState(100);
 
 	return <>
-		<h1>Upload Files</h1>
-		<input
-			type="file"
-			accept="ics"
-			multiple
-			onChange={(e) => {
-				var files = e.target.files!;
-				for(let i = 0; i < files.length; i++) {
-					const file = files[i];
-					if(file.name.endsWith(".ics")) {
-						let fr = new FileReader();
-						fr.onload = function () {
-							console.log(fr.result);
-							console.log(typeof fr.result);
+		<h1 style={{ fontSize: "60px", marginTop: "5vh" }}>Print Your Calendar</h1>
+		<p>Follow these steps to create your own Calendar:</p>
+		<div style={{ marginLeft: "13vw", marginRight: "13vw", marginTop: "5vh", marginBottom: "5vh" }}>
+			<Accordion>
+				<AccordionItem eventKey="0">
+					<AccordionHeader>Pick your Calendar Data</AccordionHeader>
+					<AccordionBody>
+						<p>
+							Choose what events you want in your calendar.
+						</p>
+						<ul>
+							<li>
+								You can import events from Google Calendar or other digital calendars.
+							</li>
+							<li>
+								You can use any data that is in a file that ends with <code>.ics</code>
+							</li>
+						</ul>
 
-							/*
-							const nCal = [...calendars];
-							nCal.push(exampleReadICS(fr.result));
-							setCalendars(nCal)
-							*/
-							setCalendars(oldCals => [...oldCals, exampleReadICS(fr.result)])
-						};
-						fr.readAsText(file);
-					} else {
-						window.alert("Please only upload .ics files");
-					}
-				}
-			}}
-		></input>
+						<h2>Import from Google Calendar</h2>
+						<ul>
+							<li>Go to your Google Calendar. <a href="https://calendar.google.com/">Click here</a></li>
+						</ul>
+						<h2></h2>
 
-		{
-			calendars.map((cal, index) => {
-				return <div key={index} className="d-flex justify-content-center" style={{ gap: 10, margin: 15 }}>
-					<MyTextInput value={cal.name} onBlur={(e) => {
-						const nCal = [...calendars];
-						nCal[index].name = e.target.value;
-						setCalendars(nCal)
-					}} />
-					<Button onClick={() => {
-						const nCal = [...calendars].filter((cal, ind) => {
-							return ind != index;
-						})
-						setCalendars(nCal)
-					}}>Delete</Button>
-					{
-						calendars.filter((c) => { return c != cal }).length > 0 &&
+						<p>Make sure all <code>.ics</code> files you need are on your device, then upload your files in the next section.</p>
+					</AccordionBody>
+				</AccordionItem>
 
-						<DropdownButton title="Merge">
-							{
-								calendars.map((other, i) => {
-									if(other != cal) {
-										return <DropdownItem key={i} onClick={() => {
-											var c = cal.mergeWithCalendar(other)
-											setCalendars(oldCals => [...oldCals.filter((o) => { return o != other && o != cal }), c])
-										}}>
-											Merge with {other.name}
-										</DropdownItem>
+			</Accordion>
+			<Accordion>
+				<Accordion.Item eventKey="0">
+					<AccordionHeader>Upload Files</AccordionHeader>
+					<AccordionBody>
+						<input
+							type="file"
+							accept="ics"
+							multiple
+							onChange={(e) => {
+								var files = e.target.files!;
+								for(let i = 0; i < files.length; i++) {
+									const file = files[i];
+									if(file.name.endsWith(".ics")) {
+										let fr = new FileReader();
+										fr.onload = function () {
+											console.log(fr.result);
+											console.log(typeof fr.result);
+
+											/*
+											const nCal = [...calendars];
+											nCal.push(exampleReadICS(fr.result));
+											setCalendars(nCal)
+											*/
+											setCalendars(oldCals => [...oldCals, exampleReadICS(fr.result)])
+										};
+										fr.readAsText(file);
+									} else {
+										window.alert("Please only upload .ics files");
 									}
-								})
-							}
+								}
+							}}
+						></input>
+					</AccordionBody>
+				</Accordion.Item>
+			</Accordion>
+			<Accordion>
+				<AccordionItem eventKey="0">
+					<AccordionHeader>Rename and Reorder Columns</AccordionHeader>
+					<AccordionBody>
+						{
+							calendars.map((cal, index) => {
+								return <div key={index} className="d-flex justify-content-center" style={{ gap: 10, margin: 15 }}>
+									<MyTextInput value={cal.name} onBlur={(e) => {
+										const nCal = [...calendars];
+										nCal[index].name = e.target.value;
+										setCalendars(nCal)
+									}} />
+									<Button onClick={() => {
+										const nCal = [...calendars].filter((cal, ind) => {
+											return ind != index;
+										})
+										setCalendars(nCal)
+									}}>Delete</Button>
+									{
+										calendars.filter((c) => { return c != cal }).length > 0 &&
 
-						</DropdownButton>
-					}
+										<DropdownButton title="Merge">
+											{
+												calendars.map((other, i) => {
+													if(other != cal) {
+														return <DropdownItem key={i} onClick={() => {
+															var c = cal.mergeWithCalendar(other)
+															setCalendars(oldCals => [...oldCals.filter((o) => { return o != other && o != cal }), c])
+														}}>
+															Merge with {other.name}
+														</DropdownItem>
+													}
+												})
+											}
 
-					{
-						cal.getIsMerged() &&
+										</DropdownButton>
+									}
+
+									{
+										cal.getIsMerged() &&
+										<Button onClick={() => {
+											setCalendars(old => [...old.filter((o) => { return o != cal }), ...cal.splitCalendar()])
+										}}>Split</Button>
+									}
+
+									{
+										calendars.length > 1 &&
+										<>
+											<Button onClick={() => {
+												setCalendars(old => swap([...old], index, index - 1))
+											}}>Move Left</Button>
+											<Button onClick={() => {
+												setCalendars(old => swap([...old], index, index + 1))
+											}}>Move Right</Button>
+										</>
+									}
+									<MyNumberInput min={0} max={1} value={cal.width} onBlur={(e) => {
+										const nCal = [...calendars];
+										nCal[index].width = e.target.value;
+										setCalendars(nCal)
+									}} />
+
+								</div>
+							})
+						}
+
 						<Button onClick={() => {
-							setCalendars(old => [...old.filter((o) => { return o != cal }), ...cal.splitCalendar()])
-						}}>Split</Button>
-					}
+							setCalendars(oldCalendars => [...oldCalendars, new Calendar("New Calendar")])
+						}}>Add Empty Calendar</Button>
+					</AccordionBody>
+				</AccordionItem>
+			</Accordion>
 
-					{
-						calendars.length > 1 &&
-						<>
-							<Button onClick={() => {
-								setCalendars(old => swap([...old], index, index - 1))
-							}}>Move Left</Button>
-							<Button onClick={() => {
-								setCalendars(old => swap([...old], index, index + 1))
-							}}>Move Right</Button>
-						</>
-					}
-					<MyNumberInput min={0} max={1} value={cal.width} onBlur={(e) => {
-						const nCal = [...calendars];
-						nCal[index].width = e.target.value;
-						setCalendars(nCal)
-					}} />
+			<Accordion>
+				<AccordionItem eventKey="0">
+					<AccordionHeader>Calendar Settings</AccordionHeader>
+					<AccordionBody>
+						<h3>Start Date</h3>
+						< DatePicker defaultYear={startOfCalendar.year} defaultMonth={startOfCalendar.month} defaultDay={startOfCalendar.day} onNewDate={(t: Time) => {
+							setStart(t.clone());
+						}} />
 
-				</div>
-			})
-		}
+						<h3>End Date</h3>
+						< DatePicker defaultYear={endOfCalendar.year} defaultMonth={endOfCalendar.month} defaultDay={endOfCalendar.day} onNewDate={(t: Time) => {
+							setEnd(t.clone());
+						}} />
 
-		<Button onClick={() => {
-			setCalendars(oldCalendars => [...oldCalendars, new Calendar("New Calendar")])
-		}}>Add Empty Calendar</Button>
+
+						<h1>Display Settings</h1>
+
+						<div className="d-flex justify-content-center" style={{ gap: 10, margin: 7 }}>
+							<h2>Font Size (%):</h2>
+							<MyNumberInput value={fontSize} onBlur={(e) => { setFontSize(e.target.value) }} min="0" max="" />
+						</div>
+
+						<div className="d-flex justify-content-center" style={{ gap: 10, margin: 7 }}>
+							<h2>Font Size Heading (%):</h2>
+							<MyNumberInput value={fontSizeHeading} onBlur={(e) => { setFontSizeHeading(e.target.value) }} min="0" max="" />
+						</div>
+
+						<div style={{ gap: 10, margin: 7, display: "none" }} >
+							<h2>Amount of days to preview:</h2>
+							<MyNumberInput value={prevAmount} onBlur={(e) => { setPrevAmount(e.target.value) }} min="" max="" />
+						</div>
+
+
+						<div className="d-flex justify-content-center" style={{ gap: 10, margin: 7 }}>
+							<h2>Font:</h2>
+							<Form.Select style={{ width: "20vw", fontFamily: fontFamily }} onChange={(e) => { setFontFamily(e.target.value) }}>
+								{
+									fonts.map((fontFam) => {
+										return <option style={{ fontFamily: fontFam }} value={fontFam}>{fontFam}</option>
+									})
+								}
+							</Form.Select>
+						</div>
+
+					</AccordionBody>
+				</AccordionItem>
+			</Accordion>
+
+		</div>
+
+
+
 
 		{
 			/*
@@ -305,46 +403,11 @@ export function CalendarList() {
 		*/
 		}
 
-		<h3>Start Date</h3>
-		< DatePicker defaultYear={startOfCalendar.year} defaultMonth={startOfCalendar.month} defaultDay={startOfCalendar.day} onNewDate={(t: Time) => {
-			setStart(t.clone());
-		}} />
-
-		<h3>End Date</h3>
-		< DatePicker defaultYear={endOfCalendar.year} defaultMonth={endOfCalendar.month} defaultDay={endOfCalendar.day} onNewDate={(t: Time) => {
-			setEnd(t.clone());
-		}} />
 
 
-		<h1>Display Settings</h1>
-
-		<div className="d-flex justify-content-center" style={{ gap: 10, margin:7 }}>
-			<h2>Font Size (%):</h2>
-			<MyNumberInput value={fontSize} onBlur={(e) => { setFontSize(e.target.value) }} min="0" max="" />
-		</div>
-
-		<div className="d-flex justify-content-center" style={{ gap: 10, margin:7 }}>
-			<h2>Font Size Heading (%):</h2>
-			<MyNumberInput value={fontSizeHeading} onBlur={(e) => { setFontSizeHeading(e.target.value) }} min="0" max="" />
-		</div>
-
-		<div style={{ gap: 10, margin:7, display:"none" }} >
-			<h2>Amount of days to preview:</h2>
-			<MyNumberInput value={prevAmount} onBlur={(e) => { setPrevAmount(e.target.value) }} min="" max="" />
-		</div>
-
-		<div className="d-flex justify-content-center" style={{ gap: 10, margin:7 }}>
-			<h2>Font:</h2>
-			<Form.Select style={{ width: "20vw", fontFamily: fontFamily }} onChange={(e) => { setFontFamily(e.target.value) }}>
-				{
-					fonts.map((fontFam) => {
-						return <option style={{ fontFamily: fontFam }} value={fontFam}>{fontFam}</option>
-					})
-				}
-			</Form.Select>
-		</div>
 
 
+		<h1>Result</h1>
 
 		<Button onClick={() => {
 			MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
@@ -352,7 +415,6 @@ export function CalendarList() {
 			})
 		}}>Download</Button>
 
-		<h1>Result</h1>
 		<Preview
 			fontFamily={fontFamily}
 			startOfCalendar={startOfCalendar}
@@ -688,12 +750,12 @@ function Render(props) {
 
 function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, preview, previewAmount = 2,
 	fontFamily = "PleaseWriteMeASong", lineHeight = 220, calendarWidth = 100,
-	fontSize=100, fontSizeHeading=100
+	fontSize = 100, fontSizeHeading = 100
 }) {
 
 	return MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
 		return <div style={{ width: size * 1100 * (calendarWidth / 100) + "px", margin: "auto" }} key={monthAndYear} className={"calendar " + monthAndYear}>
-			<p style={{ fontFamily: fontFamily, fontSize: size * 6 *(calendarWidth/100) + "em", marginTop: size * 0.05 + "em", marginBottom: size * 0.07 + "em", contentVisibility: "visible !important" }} className="monthname">{Language.getMonthName(monthAndYear)}</p>
+			<p style={{ fontFamily: fontFamily, fontSize: size * 6 * (calendarWidth / 100) + "em", marginTop: size * 0.05 + "em", marginBottom: size * 0.07 + "em", contentVisibility: "visible !important" }} className="monthname">{Language.getMonthName(monthAndYear)}</p>
 			<Table bordered style={{
 				fontSize: 1.8 * size + "em",
 				verticalAlign: "middle",
@@ -701,13 +763,13 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 				fontFamily: fontFamily,
 			}}>
 				<thead>
-					<tr style={{ fontSize: 1.2*(fontSizeHeading/100)+"em" }}>
+					<tr style={{ fontSize: 1.2 * (fontSizeHeading / 100) + "em" }}>
 						<th style={{ width: "10%", verticalAlign: "middle" }}>Day</th>
 						{calendars.map((cal: Calendar, i: number) => {
 							return <th key={i} style={{
 								verticalAlign: "middle",
 								width: (90 / calendars.length) * cal.width + "%",
-								height: (lineHeight / 100) * 55 *size + "px"
+								height: (lineHeight / 100) * 55 * size + "px"
 							}}>{cal.name}</th>;
 						})}
 					</tr>
@@ -724,14 +786,14 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 						}
 						var tdstyle = {
 							backgroundColor: day.day % 2 == 1 ? "#dedede" : "white",
-							height: (lineHeight / 100) * 40 *size + "px"
+							height: (lineHeight / 100) * 40 * size + "px"
 						}
 						return <tr key={day.toString()}>
 							<td className="day" style={{ ...tdstyle }}><b>
 								{Language.getWeekdayName(day).slice(0, 2) + " " + day.day.toString()}
 							</b></td>
 							{calendars.map((cal: Calendar, i: number) => {
-								return <td key={i} style={{ ...tdstyle, fontSize: 0.9*(fontSize/100)+"em" }}>
+								return <td key={i} style={{ ...tdstyle, fontSize: 0.9 * (fontSize / 100) + "em" }}>
 									{cal.getEvents(day).map((ev: CalendarEvent) => {
 										return ev.getFullSummary();
 									}).join(", ")
@@ -756,10 +818,10 @@ function downloadHTMLElementWithID(monthAndYear: string, parentID: string = "") 
 		parent.style.setProperty("display", "block")
 	}
 	for(let i = 0; i < els.length; i++) {
-		html2canvas(els[i] as HTMLElement, { scrollX: -window.scrollX, scale:6 }).then(canvas => {
+		html2canvas(els[i] as HTMLElement, { scrollX: -window.scrollX, scale: 6 }).then(canvas => {
 			var link = document.createElement('a');
 			link.download = monthAndYear + '.jpg';
-			link.href = canvas.toDataURL("image/jpeg",0.9);
+			link.href = canvas.toDataURL("image/jpeg", 0.9);
 			link.click();
 		});
 	}
