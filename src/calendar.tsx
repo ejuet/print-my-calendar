@@ -177,7 +177,7 @@ const fonts = [
 	'Yu Gothic',
 ];
 export function CalendarList() {
-	const [calendars, setCalendars] = useState([exampleReadICS(testcontent), exampleReadICS(testcontent2)]);
+	const [calendars, setCalendars] = useState([exampleReadICS(testcontent)]);
 
 	const [startOfCalendar, setStart] = useState(new Time({
 		year: 2023,
