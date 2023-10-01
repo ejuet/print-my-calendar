@@ -10,7 +10,7 @@ import {
 } from "react-router-dom";
 
 import { Container, Nav, NavDropdown, Navbar } from "react-bootstrap";
-import { CalendarList } from './calendar.tsx';
+import { CalendarList, Credits } from './calendar.tsx';
 
 
 /*
@@ -26,7 +26,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <WithNavbar>
-      
+
     </WithNavbar>
   },
   {
@@ -38,7 +38,7 @@ const router = createBrowserRouter([
   {
     path: "credits",
     element: <WithNavbar>
-
+      <Credits />
     </WithNavbar>
   }
 ]);
@@ -59,11 +59,19 @@ function WithNavbar({ children }) {
 function MyNavbar() {
   return <Navbar collapseOnSelect expand="lg" className="bg-body-tertiary">
     <Container>
-      <Navbar.Brand href="">Print Your Calendar</Navbar.Brand>
+      <NavLink to="/" onlyActiveOnIndex exact activeClassName="active">
+        <Navbar.Brand href="" >Print Your Calendar</Navbar.Brand>
+
+      </NavLink>
       <Navbar.Toggle aria-controls="responsive-navbar-nav" />
       <Navbar.Collapse id="responsive-navbar-nav">
         <Nav className="me-auto">
-          <NavLink to="/calendar">Calendar Download</NavLink>
+          <Nav.Link>
+            <NavLink to="/">Home</NavLink>
+          </Nav.Link>
+          <Nav.Link>
+            <NavLink to="/calendar">Calendar Download</NavLink>
+          </Nav.Link>
         </Nav>
         <Nav>
           <NavLink to="/credits">Info & Credits</NavLink>

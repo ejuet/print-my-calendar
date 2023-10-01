@@ -351,7 +351,6 @@ export function CalendarList() {
 				downloadHTMLElementWithID(monthAndYear);
 			})
 		}}>Download</Button>
-		<Credits />
 
 		<h1>Result</h1>
 		<Preview
@@ -375,7 +374,7 @@ function Result(props) {
 
 }
 
-function Credits() {
+export function Credits() {
 	return <div className="">
 		<h1>Info & Credits</h1>
 		<h2>ICal.js</h2>

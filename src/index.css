@@ -36,6 +36,10 @@ a{
   font-weight:600;
 }
 
+.navbar-brand{
+  font-weight: normal !important;
+}
+
 /*
 .monthname{
   font-size: 70px;
