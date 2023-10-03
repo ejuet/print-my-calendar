@@ -6,7 +6,8 @@ import reportWebVitals from './reportWebVitals';
 import {
   createBrowserRouter,
   RouterProvider,
-  NavLink
+  NavLink,
+  createHashRouter
 } from "react-router-dom";
 
 import { Container, Nav, NavDropdown, Navbar } from "react-bootstrap";
@@ -22,28 +23,25 @@ root.render(
 );
 */
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
-    path: "/print-my-calendar",
+    path: "/",
     element: <WithNavbar>
       <HeroImage />
-    </WithNavbar>,
-    children:[
-      {
-        path: "/print-my-calendar/calendar",
-        element: <WithNavbar>
-          <CalendarList />
-        </WithNavbar>
-      },
-      {
-        path: "/print-my-calendar/credits",
-        element: <WithNavbar>
-          <Credits />
-        </WithNavbar>
-      }
-    ]
+    </WithNavbar>
   },
-  
+  {
+    path: "calendar",
+    element: <WithNavbar>
+      <CalendarList />
+    </WithNavbar>
+  },
+  {
+    path: "credits",
+    element: <WithNavbar>
+      <Credits />
+    </WithNavbar>
+  }
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -62,7 +60,7 @@ function WithNavbar({ children }) {
 function MyNavbar() {
   return <Navbar collapseOnSelect expand="lg" className="bg-body-tertiary">
     <Container>
-      <NavLink to="/print-my-calendar" onlyActiveOnIndex exact activeClassName="active">
+      <NavLink to="/" onlyActiveOnIndex exact activeClassName="active">
         <Navbar.Brand href="" >Print Your Calendar</Navbar.Brand>
 
       </NavLink>
@@ -70,14 +68,14 @@ function MyNavbar() {
       <Navbar.Collapse id="responsive-navbar-nav">
         <Nav className="me-auto">
           <Nav.Link>
-            <NavLink to="/print-my-calendar">Home</NavLink>
+            <NavLink to="/">Home</NavLink>
           </Nav.Link>
           <Nav.Link>
-            <NavLink to="/print-my-calendar/calendar">Calendar Download</NavLink>
+            <NavLink to="/calendar">Calendar Download</NavLink>
           </Nav.Link>
         </Nav>
         <Nav>
-          <NavLink to="/print-my-calendar/credits">Info & Credits</NavLink>
+          <NavLink to="/credits">Info & Credits</NavLink>
         </Nav>
       </Navbar.Collapse>
     </Container>
@@ -101,7 +99,7 @@ export default function HeroImage() {
             <div className='text-dark'>
               <h1 className='mb-3'>Print Your Calendar</h1>
               <h4 className='mb-3'>Download and print your own Calendar in 7 easy steps</h4>
-              <a className='btn btn-outline-dark btn-lg' href='/calendar' role='button'>
+              <a className='btn btn-outline-dark btn-lg' href='/#/calendar' role='button'>
                 Use for free
               </a>
             </div>
