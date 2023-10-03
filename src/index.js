@@ -62,7 +62,7 @@ function WithNavbar({ children }) {
 function MyNavbar() {
   return <Navbar collapseOnSelect expand="lg" className="bg-body-tertiary">
     <Container>
-      <NavLink to="/" onlyActiveOnIndex exact activeClassName="active">
+      <NavLink to="/print-my-calendar" onlyActiveOnIndex exact activeClassName="active">
         <Navbar.Brand href="" >Print Your Calendar</Navbar.Brand>
 
       </NavLink>
@@ -70,7 +70,7 @@ function MyNavbar() {
       <Navbar.Collapse id="responsive-navbar-nav">
         <Nav className="me-auto">
           <Nav.Link>
-            <NavLink to="/">Home</NavLink>
+            <NavLink to="/print-my-calendar">Home</NavLink>
           </Nav.Link>
           <Nav.Link>
             <NavLink to="/print-my-calendar/calendar">Calendar Download</NavLink>
