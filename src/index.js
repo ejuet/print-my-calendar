@@ -24,7 +24,7 @@ root.render(
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: "/print-my-calendar",
     element: <WithNavbar>
       <HeroImage />
     </WithNavbar>
