@@ -1,0 +1,78 @@
+@font-face {
+  font-family: PleaseWriteMeASong;
+  src: url(Please\ write\ me\ a\ song.ttf);
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+a{
+  text-decoration: inherit !important;
+  /* color: inherit !important; */
+}
+
+.active {
+  font-weight:600;
+}
+
+.navbar-brand{
+  font-weight: normal !important;
+}
+
+ul {
+  margin-left: 20%;
+  margin-right: 20%;
+}
+
+/*
+.monthname{
+  font-size: 70px;
+}
+
+.day{
+  font-weight: bold;
+  font-size: larger;
+  text-align: right;
+  height: 60px;
+}
+
+th{
+  font-size: larger;
+}
+*/
+
+/*
+table.table-by-column tr{
+  display: table-cell;
+}
+
+table.table-by-column td{
+  display: block;
+}
+
+table.table-by-column, table.table-by-column th, table.table-by-column td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+*/
