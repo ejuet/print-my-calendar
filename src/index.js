@@ -27,20 +27,23 @@ const router = createBrowserRouter([
     path: "/print-my-calendar",
     element: <WithNavbar>
       <HeroImage />
-    </WithNavbar>
+    </WithNavbar>,
+    children:[
+      {
+        path: "/print-my-calendar/calendar",
+        element: <WithNavbar>
+          <CalendarList />
+        </WithNavbar>
+      },
+      {
+        path: "/print-my-calendar/credits",
+        element: <WithNavbar>
+          <Credits />
+        </WithNavbar>
+      }
+    ]
   },
-  {
-    path: "/print-my-calendar/calendar",
-    element: <WithNavbar>
-      <CalendarList />
-    </WithNavbar>
-  },
-  {
-    path: "/print-my-calendar/credits",
-    element: <WithNavbar>
-      <Credits />
-    </WithNavbar>
-  }
+  
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -70,11 +73,11 @@ function MyNavbar() {
             <NavLink to="/">Home</NavLink>
           </Nav.Link>
           <Nav.Link>
-            <NavLink to="/calendar">Calendar Download</NavLink>
+            <NavLink to="/print-my-calendar/calendar">Calendar Download</NavLink>
           </Nav.Link>
         </Nav>
         <Nav>
-          <NavLink to="/credits">Info & Credits</NavLink>
+          <NavLink to="/print-my-calendar/credits">Info & Credits</NavLink>
         </Nav>
       </Navbar.Collapse>
     </Container>
