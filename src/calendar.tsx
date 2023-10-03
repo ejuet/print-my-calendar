@@ -220,13 +220,31 @@ export function CalendarList() {
 							</li>
 						</ul>
 
-						<h2>Import from Google Calendar</h2>
-						<ul>
-							<li>Go to your Google Calendar. <a href="https://calendar.google.com/">Click here</a></li>
-						</ul>
-						<h2></h2>
+						<Accordion>
+							<AccordionItem eventKey="0">
+								<AccordionHeader>Import from Google Calendar</AccordionHeader>
+								<AccordionBody>
+									<ul>
+										<li>Go to your Google Calendar. <a href="https://calendar.google.com/" target="_blank">Click here</a></li>
+										<li>Click the Zahnradsymbol in the top right corner and then click <code>Settings</code>.</li>
+										<li>Click <code>Importieren & Exportieren</code> and then click <code>Exportieren</code>.</li>
+										<li>Upload the Files in the next section.</li>
+									</ul>
+								</AccordionBody>
+							</AccordionItem>
+							<AccordionItem eventKey="1">
+								<AccordionHeader>Import Müllabfuhrtermine Bonn</AccordionHeader>
+								<AccordionBody>
+									<ul>
+										<li>Go to <a href="https://www.bonnorange.de/service/privatpersonen/abfuhrtermine/termine" target="_blank">BonnOrange</a> and fill in your information.</li>
+										<li>Click <code>Leerungstermine in einer ical-Kalenderdatei</code> to download.</li>
+										<li>Upload your files in the next section.</li>
+									</ul>
+								</AccordionBody>
+							</AccordionItem>
+						</Accordion>
 
-						<p>Make sure all <code>.ics</code> files you need are on your device, then upload your files in the next section.</p>
+						<p style={{marginTop:10}}>Make sure all <code>.ics</code> files you need are on your device, then upload your files in the next section.</p>
 					</AccordionBody>
 				</AccordionItem>
 
@@ -334,7 +352,7 @@ export function CalendarList() {
 
 						<Button onClick={() => {
 							setCalendars(oldCalendars => [...oldCalendars, new Calendar("New Calendar")])
-						}}>Add Empty Calendar</Button>
+						}}>Add Empty Column</Button>
 					</AccordionBody>
 				</AccordionItem>
 			</Accordion>
