@@ -1,0 +1,8 @@
+{
+  "short_name": "Print Your Calendar",
+  "name": "Print Your Calendar",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
