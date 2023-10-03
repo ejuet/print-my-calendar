@@ -30,13 +30,13 @@ const router = createBrowserRouter([
     </WithNavbar>
   },
   {
-    path: "calendar",
+    path: "/print-my-calendar/calendar",
     element: <WithNavbar>
       <CalendarList />
     </WithNavbar>
   },
   {
-    path: "credits",
+    path: "/print-my-calendar/credits",
     element: <WithNavbar>
       <Credits />
     </WithNavbar>
