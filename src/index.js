@@ -87,21 +87,19 @@ export default function HeroImage() {
     <header style={{ paddingLeft: 0 }}>
       <div
         className='text-center bg-image'
-        style={{ 
+        style={{
           backgroundImage: "url('printer.jpg')",
           height: 400,
-          backgroundSize:"cover",
+          backgroundSize: "cover",
           backgroundPosition: "right top"
-         }}
+        }}
       >
-        <div className='mask h-100' style={{ backgroundColor: 'rgba(0, 0, 0, 0.1)', margin:0 }}>
+        <div className='mask h-100' style={{ backgroundColor: 'rgba(0, 0, 0, 0.1)', margin: 0 }}>
           <div className='d-flex justify-content-center align-items-center h-100'>
             <div className='text-dark'>
               <h1 className='mb-3'>Print Your Calendar</h1>
               <h4 className='mb-3'>Download and print your own Calendar in 7 easy steps</h4>
-              <a className='btn btn-outline-dark btn-lg' href='/#/calendar' role='button'>
-                Use for free
-              </a>
+              <NavLink className='btn btn-outline-dark btn-lg' to="/calendar" role="button">Use for free</NavLink>
             </div>
           </div>
         </div>
