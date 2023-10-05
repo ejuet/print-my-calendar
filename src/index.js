@@ -23,7 +23,7 @@ root.render(
 );
 */
 
-const router = createHashRouter([
+const router = createBrowserRouter([
   {
     path: "/",
     element: <WithNavbar>
