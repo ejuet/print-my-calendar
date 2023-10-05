@@ -244,7 +244,7 @@ export function CalendarList() {
 							</AccordionItem>
 						</Accordion>
 
-						<p style={{marginTop:10}}>Make sure all <code>.ics</code> files you need are on your device, then upload your files in the next section.</p>
+						<p style={{ marginTop: 10 }}>Make sure all <code>.ics</code> files you need are on your device, then upload your files in the next section ("Upload Files").</p>
 					</AccordionBody>
 				</AccordionItem>
 
@@ -284,6 +284,19 @@ export function CalendarList() {
 					</AccordionBody>
 				</Accordion.Item>
 			</Accordion>
+
+			<Accordion>
+				<AccordionItem>
+					<AccordionHeader>
+						Preview your Calendar
+					</AccordionHeader>
+					<AccordionBody>
+						<p>Scroll to the bottom of the page to preview your calendar.</p>
+						<p>Then, go to the next sections ("Rename and Reorder Columns" or "Calendar Settings") if you want to make any changes to your calendar.</p>
+					</AccordionBody>
+				</AccordionItem>
+			</Accordion>
+
 			<Accordion>
 				<AccordionItem eventKey="0">
 					<AccordionHeader>Rename and Reorder Columns</AccordionHeader>
@@ -405,10 +418,31 @@ export function CalendarList() {
 				</AccordionItem>
 			</Accordion>
 
+			<Accordion>
+				<AccordionItem eventKey="0">
+					<AccordionHeader>Download your Calendar</AccordionHeader>
+					<AccordionBody>
+						<p>
+							If you are happy with how your calendar looks, click this button to download it. <br></br>
+						</p>
+						<DownloadButton startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} />
+					</AccordionBody>
+				</AccordionItem>
+			</Accordion>
+
+			<Accordion>
+				<AccordionItem eventKey="0">
+					<AccordionHeader>Print your Calendar</AccordionHeader>
+					<AccordionBody>
+						<p>
+							After clicking the download button, your calendar should be downloaded as individual images.
+							<br></br>Open your "Downloads" folder and print them as you like.
+						</p>
+					</AccordionBody>
+				</AccordionItem>
+			</Accordion>
+
 		</div>
-
-
-
 
 		{
 			/*
@@ -421,17 +455,9 @@ export function CalendarList() {
 		*/
 		}
 
-
-
-
-
 		<h1>Result</h1>
 
-		<Button onClick={() => {
-			MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
-				downloadHTMLElementWithID(monthAndYear);
-			})
-		}}>Download</Button>
+		<DownloadButton startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} />
 
 		<Preview
 			fontFamily={fontFamily}
@@ -444,6 +470,14 @@ export function CalendarList() {
 		/>
 	</>
 
+}
+
+function DownloadButton({ startOfCalendar, endOfCalendar }) {
+	return <Button onClick={() => {
+		MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
+			downloadHTMLElementWithID(monthAndYear);
+		});
+	}}>Download</Button>;
 }
 
 function Result(props) {
