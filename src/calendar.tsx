@@ -204,6 +204,7 @@ export function CalendarList() {
 
 	const [fontSize, setFontSize] = useState(100);
 	const [fontSizeHeading, setFontSizeHeading] = useState(100);
+	const [calendarWidth, setCalendarWidth] = useState(100);
 
 	return <>
 		<h1 style={{ fontSize: "60px", marginTop: "5vh" }}>Print Your Calendar</h1>
@@ -402,6 +403,12 @@ export function CalendarList() {
 							<MyNumberInput value={fontSizeHeading} onBlur={(e) => { setFontSizeHeading(e.target.value) }} min="0" max="" />
 						</div>
 
+						
+						<div className="d-flex justify-content-center" style={{ gap: 10, margin: 7 }}>
+							<h2>Width (%):</h2>
+							<MyNumberInput value={calendarWidth} onBlur={(e) => { setCalendarWidth(e.target.value) }} min="1" max="" />
+						</div>
+
 						<div style={{ gap: 10, margin: 7, display: "none" }} >
 							<h2>Amount of days to preview:</h2>
 							<MyNumberInput value={prevAmount} onBlur={(e) => { setPrevAmount(e.target.value) }} min="" max="" />
@@ -472,6 +479,7 @@ export function CalendarList() {
 			previewAmount={prevAmount}
 			fontSize={fontSize}
 			fontSizeHeading={fontSizeHeading}
+			calendarWidth={calendarWidth}
 		/>
 	</>
 
