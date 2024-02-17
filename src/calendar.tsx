@@ -202,11 +202,11 @@ export function CalendarList() {
 
 	const [prevAmount, setPrevAmount] = useState(31);
 
-	const [fontFamily, setFontFamily] = useState("PleaseWriteMeASong")
+	const [fontFamily, setFontFamily] = useState("Comic Sans MS")
 
 	const [fontSize, setFontSize] = useState(100);
 	const [fontSizeHeading, setFontSizeHeading] = useState(100);
-	const [calendarWidth, setCalendarWidth] = useState(185);
+	const [calendarWidth, setCalendarWidth] = useState(100);
 
 	return <>
 		<h1 style={{ fontSize: "60px", marginTop: "5vh" }}>Print Your Calendar</h1>
@@ -490,27 +490,28 @@ function DownloadButton({ startOfCalendar, endOfCalendar }) {
 	const [downloading, setDownloading] = useState(false);
 
 	return <>
-	<Button onClick={() => {
-		/*
-		MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
-			downloadHTMLElementWithID(monthAndYear);
-		});
-		*/
-		setDownloading(true);
-		downloadAsPDF(startOfCalendar, endOfCalendar).then(()=>{
-			setDownloading(false)
-		})
-	}}>Download</Button>
-	{
-		downloading &&
-		<div style={{marginTop: 5}}>
-			<Spinner></Spinner>
-			<p>Creating PDF...</p>
-		</div>
-	}
-	</> ;
+		<Button onClick={() => {
+			/*
+			MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
+				downloadHTMLElementWithID(monthAndYear);
+			});
+			*/
+			setDownloading(true);
+			downloadAsPDF(startOfCalendar, endOfCalendar).then(() => {
+				setDownloading(false)
+			})
+		}}>Download</Button>
+		{
+			downloading &&
+			<div style={{ marginTop: 5 }}>
+				<Spinner></Spinner>
+				<p>Creating PDF...</p>
+			</div>
+		}
+	</>;
 }
 
+/*
 function Result(props) {
 	return <>
 		<Preview {...props} />
@@ -518,6 +519,7 @@ function Result(props) {
 	</>
 
 }
+*/
 
 export function Credits() {
 	return <div className="">
@@ -852,12 +854,13 @@ class Calendar {
 
 function Preview(props) {
 	return <CalendarPreview
-		size={0.3}
+		size={0.1}
 		preview={true}
 		{...props}
 	/>
 }
 
+/*
 function Render(props) {
 	return <div id="renderedResult" style={{ display: "none" }}>
 		<CalendarPreview
@@ -867,16 +870,19 @@ function Render(props) {
 		/>
 	</div>
 }
-
+*/
 
 function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, preview, previewAmount = 2,
-	fontFamily = "PleaseWriteMeASong", lineHeight = 220, calendarWidth = 100,
-	fontSize = 100, fontSizeHeading = 100
+	fontFamily = "PleaseWriteMeASong", lineHeight = 400, calendarWidth = 100,
+	fontSize = 400, fontSizeHeading = 100
 }) {
+	const pageWidth = size * 4000 * (calendarWidth / 100) // in px
+
+
 
 	return MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
-		return <div style={{ width: size * 1100 * (calendarWidth / 100) + "px", margin: "auto" }} key={monthAndYear} className={"calendar " + monthAndYear} id={monthAndYear}>
-			<p style={{ fontFamily: fontFamily, fontSize: size * 6 * (calendarWidth / 100) + "em", marginTop: size * 0.05 + "em", marginBottom: size * 0.07 + "em", contentVisibility: "visible !important" }} className="monthname">{Language.getMonthName(monthAndYear)}</p>
+		return <div style={{ width: pageWidth + "px", margin: "auto" }} key={monthAndYear} className={"calendar " + monthAndYear} id={monthAndYear}>
+			<p style={{ fontFamily: fontFamily, fontSize: (lineHeight / 100) * 120 * 0.65 * size * (fontSizeHeading / 100)+"px", marginTop: size * 0.05 + "em", marginBottom: size * 0.07 + "em", contentVisibility: "visible !important" }} className="monthname">{Language.getMonthName(monthAndYear)}</p>
 			<Table bordered style={{
 				fontSize: 1.8 * size + "em",
 				verticalAlign: "middle",
@@ -884,13 +890,14 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 				fontFamily: fontFamily,
 			}}>
 				<thead>
-					<tr style={{ fontSize: 1.2 * (fontSizeHeading / 100) + "em" }}>
+					<tr style={{ fontSize: (lineHeight / 100) * 40 * 0.65 * size * (fontSizeHeading / 100) }}>
 						<th style={{ width: "10%", verticalAlign: "middle" }}>Day</th>
 						{calendars.map((cal: Calendar, i: number) => {
 							return <th key={i} style={{
 								verticalAlign: "middle",
 								width: (90 / calendars.length) * cal.width + "%",
 								height: (lineHeight / 100) * 55 * size + "px"
+								, fontSize: (lineHeight / 100) * 55 * 0.65 * size * (fontSizeHeading / 100) + "px" //use maximum font size that fits into row if there is only one line
 							}}>{cal.name}</th>;
 						})}
 					</tr>
@@ -907,17 +914,36 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 						}
 						var tdstyle = {
 							backgroundColor: day.day % 2 == 1 ? "#dedede" : "white",
-							height: (lineHeight / 100) * 40 * size + "px"
+							height: (lineHeight / 100) * 40 * size + "px",
+							//fontSize: 0.9 * (fontSize / 100) + "em"
+							fontSize: (lineHeight / 100) * 40 * 0.65 * size * (fontSize / 100) + "px" //use maximum font size that fits into row if there is only one line
 						}
-						return <tr key={day.toString()}>
-							<td className="day" style={{ ...tdstyle }}><b>
-								{Language.getWeekdayName(day).slice(0, 2) + " " + day.day.toString()}
-							</b></td>
+						return <tr key={day.toString()} >
+							<td className="day" style={tdstyle}>
+								<b style={{ 
+									fontSize:(lineHeight / 100) * 20 * 0.65 * size * (fontSize / 100) + "px"
+									}}>
+									{Language.getWeekdayName(day).slice(0, 2) + " " + day.day.toString()}
+								</b>
+							</td>
 							{calendars.map((cal: Calendar, i: number) => {
-								return <td key={i} style={{ ...tdstyle, fontSize: 0.9 * (fontSize / 100) + "em" }}>
-									{cal.getEvents(day).map((ev: CalendarEvent) => {
-										return ev.getFullSummary();
-									}).join(", ")
+								const content = cal.getEvents(day).map((ev: CalendarEvent) => {
+									return ev.getFullSummary();
+								}).join(", ")
+
+								const fieldWidth = pageWidth*((90 / calendars.length) * cal.width)/100
+
+								const charsPerLineWidth = (32/183.15) //measured values
+
+								const charsPerLine = charsPerLineWidth*fieldWidth;
+
+								const lines = Math.ceil(content.length/charsPerLine);
+
+								return <td key={i} style={{...tdstyle,
+									fontSize: (lineHeight / 100) * 40 * 0.65 * size * (fontSize / 100) * (1/lines) + "px"
+								}}>
+									{
+										content 
 									}
 								</td>;
 							})}
@@ -968,7 +994,7 @@ async function createPdf(urls, filename) {
 	// Create download link
 	const downloadLink = document.createElement('a');
 	downloadLink.href = URL.createObjectURL(pdfBlob);
-	downloadLink.download = filename+'.pdf';
+	downloadLink.download = filename + '.pdf';
 	downloadLink.click();
 }
 
@@ -980,13 +1006,13 @@ function downloadAsPDF(startOfCalendar, endOfCalendar) {
 
 	return Promise.all(promises).then(links => {
 		const urls = links.map((link) => link.href)
-		createPdf(urls, "Calendar-"+startOfCalendar+"-"+endOfCalendar)
+		createPdf(urls, "Calendar-" + startOfCalendar + "-" + endOfCalendar)
 	})
 }
 
 
 function downloadHTMLElementWithID(monthAndYear: string, parentID: string = "") {
-	getDownloadLink(monthAndYear).then(()=>link.click())
+	getDownloadLink(monthAndYear).then(() => link.click())
 }
 
 //TODO monthAndYear was initially taken from classname and not id, check if classname is important anywhere else and if not remove it from classname

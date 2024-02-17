@@ -45,6 +45,10 @@ ul {
   margin-right: 20%;
 }
 
+td{
+  padding: 0px !important;
+}
+
 /*
 .monthname{
   font-size: 70px;
