@@ -974,29 +974,8 @@ function downloadAsPDF(startOfCalendar, endOfCalendar) {
 }
 
 
-
 function downloadHTMLElementWithID(monthAndYear: string, parentID: string = "") {
 	getDownloadLink(monthAndYear).then(()=>link.click())
-	return;
-	var els = document.getElementsByClassName(monthAndYear);
-	if(parentID != "") {
-		var parent = document.getElementById(parentID)! as HTMLElement;
-		els = parent.getElementsByClassName(monthAndYear);
-		parent.style.setProperty("display", "block")
-	}
-	for(let i = 0; i < els.length; i++) {
-		html2canvas(els[i] as HTMLElement, { scrollX: -window.scrollX, scale: 6 }).then(canvas => {
-			var link = document.createElement('a');
-			link.download = monthAndYear + '.jpg';
-			link.href = canvas.toDataURL("image/jpeg", 0.9);
-			console.log(link.href);
-			link.click();
-		});
-	}
-	if(parentID != "") {
-		(document.getElementById(parentID)! as HTMLElement).style.setProperty("display", "none")
-	}
-
 }
 
 //TODO monthAndYear was initially taken from classname and not id, check if classname is important anywhere else and if not remove it from classname
@@ -1012,17 +991,6 @@ function getDownloadLink(monthAndYear: string) {
 		}).catch(error => {
 			reject(error); // Reject the promise if there's an error
 		});
-	});
-
-
-	var els = document.getElementById(monthAndYear);
-	html2canvas(els as HTMLElement, { scrollX: -window.scrollX, scale: 6 }).then(canvas => {
-		var link = document.createElement('a');
-		link.download = monthAndYear + '.jpg';
-		link.href = canvas.toDataURL("image/jpeg", 0.9);
-		console.log(link.href);
-
-		return link;
 	});
 }
 
