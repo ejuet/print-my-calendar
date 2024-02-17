@@ -185,6 +185,8 @@ const fonts = [
 	'Yu Gothic',
 ];
 export function CalendarList() {
+	//TODO save all properties in cookie so nothing is lost on refresh
+
 	const [calendars, setCalendars] = useState([
 		//exampleReadICS(testcontent)
 	]);
