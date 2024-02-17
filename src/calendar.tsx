@@ -204,7 +204,7 @@ export function CalendarList() {
 
 	const [fontSize, setFontSize] = useState(100);
 	const [fontSizeHeading, setFontSizeHeading] = useState(100);
-	const [calendarWidth, setCalendarWidth] = useState(100);
+	const [calendarWidth, setCalendarWidth] = useState(185);
 
 	return <>
 		<h1 style={{ fontSize: "60px", marginTop: "5vh" }}>Print Your Calendar</h1>
