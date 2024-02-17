@@ -933,7 +933,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 							}
 						}
 						var tdstyle = {
-							backgroundColor: day.day % 2 == 1 ? "#dedede" : "white",
+							backgroundColor: day.toJSDate().getDay()==6||day.toJSDate().getDay()==0 ? "#b8b8b8" : (day.toJSDate().getDay() % 2 == 0 ? "#dedede" : "white"),
 							height: (lineHeight / 100) * 40 * size + "px",
 							//fontSize: 0.9 * (fontSize / 100) + "em"
 							fontSize: (lineHeight / 100) * 40 * 0.65 * size * (fontSize / 100) + "px" //use maximum font size that fits into row if there is only one line
