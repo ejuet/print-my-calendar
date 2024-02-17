@@ -184,8 +184,7 @@ const fonts = [
 ];
 export function CalendarList() {
 	const [calendars, setCalendars] = useState([
-		//exampleReadICS(testcontent)
-		new Calendar("Column")
+		exampleReadICS(testcontent)
 	]);
 
 	const [startOfCalendar, setStart] = useState(new Time({
