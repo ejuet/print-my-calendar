@@ -202,7 +202,7 @@ export function CalendarList() {
 
 	const [prevAmount, setPrevAmount] = useState(31);
 
-	const [fontFamily, setFontFamily] = useState("Comic Sans MS")
+	const [fontFamily, setFontFamily] = useState("PleaseWriteMeASong")
 
 	const [fontSize, setFontSize] = useState(100);
 	const [fontSizeHeading, setFontSizeHeading] = useState(100);
@@ -419,7 +419,7 @@ export function CalendarList() {
 
 						<div className="d-flex justify-content-center" style={{ gap: 10, margin: 7 }}>
 							<h2>Font:</h2>
-							<Form.Select style={{ width: "20vw", fontFamily: fontFamily }} onChange={(e) => { setFontFamily(e.target.value) }}>
+							<Form.Select defaultValue={fontFamily} style={{ width: "20vw", fontFamily: fontFamily }} onChange={(e) => { setFontFamily(e.target.value) }}>
 								{
 									fonts.map((fontFam) => {
 										return <option style={{ fontFamily: fontFam }} value={fontFam}>{fontFam}</option>
@@ -437,7 +437,7 @@ export function CalendarList() {
 					<AccordionHeader>Download your Calendar</AccordionHeader>
 					<AccordionBody>
 						<p>
-							If you are happy with how your calendar looks, click the Button below to download it. <br></br>
+							If you are happy with how your calendar looks, click the Button below to turn it into a PDF File. <br></br>
 						</p>
 					</AccordionBody>
 				</AccordionItem>
@@ -448,7 +448,7 @@ export function CalendarList() {
 					<AccordionHeader>Print your Calendar</AccordionHeader>
 					<AccordionBody>
 						<p>
-							After clicking the download button, your calendar should be downloaded as a PDF document.
+							After clicking the "Save as PDF"-button, your calendar should be saved as a PDF document.
 							<br></br>Open your "Downloads" folder and print it.
 						</p>
 					</AccordionBody>
@@ -500,7 +500,7 @@ function DownloadButton({ startOfCalendar, endOfCalendar }) {
 			downloadAsPDF(startOfCalendar, endOfCalendar).then(() => {
 				setDownloading(false)
 			})
-		}}>Download</Button>
+		}}>Save as PDF</Button>
 		{
 			downloading &&
 			<div style={{ marginTop: 5 }}>
@@ -527,7 +527,9 @@ export function Credits() {
 		<h2>ICal.js</h2>
 		<p>Used for parsing calendar data</p>
 		<h2>HTML2Canvas</h2>
-		<p>Used for rendering the calendar as a canvas element to be able to download it.</p>
+		<p>Used for rendering the calendar as a canvas element to be able to turn it into a PDF.</p>
+		<h2>pdf-lib</h2>
+		<p>Used for creating the PDF File.</p>
 		<h2>Font "Please Write Me A Song"</h2>
 		<p style={{ fontFamily: "PleaseWriteMeASong" }}>Created by Vanessa Bays @ http://bythebutterfly.com</p>
 		<h2>Other</h2>
