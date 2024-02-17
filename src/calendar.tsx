@@ -46,13 +46,16 @@ export function exampleReadICS(textcontent) {
 		*/
 
 		//iterate over dates of event
-		//TODO stop iteration when recurring is infinite => only for a few years or so
+		//TODO warn that calendar data is only read for 15 years into future
 		let iter = ev.iterator(ev.startDate)
 		for(let next = iter.next(); next; next = iter.next()) {
 
 			let calenderEv = new CalendarEvent(next, ev.duration, ev.summary);
 			calendar.addEvent(calenderEv);
-			//console.log(calenderEv)
+			
+			if(calenderEv.startDate.toJSDate().getFullYear()>(new Date()).getFullYear()+15){
+				break;
+			}
 		}
 
 	}
@@ -183,12 +186,12 @@ export function CalendarList() {
 	const [calendars, setCalendars] = useState([exampleReadICS(testcontent)]);
 
 	const [startOfCalendar, setStart] = useState(new Time({
-		year: 2023,
+		year: (new Date()).getFullYear(),
 		month: 1,
 		day: 1
 	}))
 	const [endOfCalendar, setEnd] = useState(new Time({
-		year: 2023,
+		year: (new Date()).getFullYear(),
 		month: 12,
 		day: 31
 	}))
