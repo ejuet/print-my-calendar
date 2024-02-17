@@ -24,6 +24,10 @@ const trashcanNameReplacements = {
 	"Papierbehaelter": "Blaue Tonne",
 }
 
+//TODO second format where each month is printed over 2 DinA4 pages
+//TODO let users add images for each month
+//TODO let users delete or even add items to calendars
+
 export function exampleReadICS(textcontent) {
 	let calendar = new Calendar("Aaaa");
 
