@@ -836,7 +836,7 @@ class Calendar {
 
 function Preview(props) {
 	return <CalendarPreview
-		size={0.8}
+		size={0.3}
 		preview={true}
 		{...props}
 	/>
