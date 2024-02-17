@@ -824,6 +824,22 @@ class Calendar {
 		var c = new Calendar(this.name + " & " + other.name);
 		c.items = this.items.concat(other.items);
 		c.isMerged = true;
+
+		const mergedMap = new Map<string, CalendarEvent[]>(this.eventCache);
+
+		other.eventCache.forEach((value, key) => {
+			if (mergedMap.has(key)) {
+				// If a conflict arises (key already exists), you may want to merge or overwrite the values
+				// For simplicity, this example just overwrites the values
+				mergedMap.set(key, mergedMap.get(key)!.concat(value))
+			} else {
+				// If the key doesn't exist in the destination map, simply add the key-value pair
+				mergedMap.set(key, value);
+			}
+		});
+
+		c.eventCache = mergedMap;
+
 		return c;
 	}
 
