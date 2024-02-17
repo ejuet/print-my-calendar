@@ -184,7 +184,7 @@ const fonts = [
 ];
 export function CalendarList() {
 	const [calendars, setCalendars] = useState([
-		exampleReadICS(testcontent)
+		//exampleReadICS(testcontent)
 	]);
 
 	const [startOfCalendar, setStart] = useState(new Time({
@@ -637,7 +637,7 @@ class CalendarEvent {
 		let e = this.endDate.toJSDate();
 
 		return (
-			Math.abs(this.startDate.compareDateOnlyTz(this.endDate, Timezone.localTimezone)) == 1 &&
+			Math.abs((this.startDate.toJSDate().valueOf()-this.endDate.toJSDate().valueOf())/(1000*60*60*24)) == 1 &&
 			s.getHours() == 0 && e.getHours() == 0 && s.getMinutes() == 0 && e.getMinutes() == 0
 		)
 	}
@@ -698,16 +698,60 @@ class Calendar {
 	name: string
 	private isMerged: boolean
 	width: number
+
+	
+    eventCache: Map<string, CalendarEvent[]>; // Map to cache events by date
+
 	constructor(name: string) {
 		this.items = [];
 		this.name = name;
 		this.isMerged = false;
 		this.width = 1;
+
+		this.eventCache = new Map(); // Initialize the event cache
 	}
 
 	addEvent(ev: CalendarEvent) {
 		ev.addedToCalendar(this);
 		this.items.push(ev);
+
+		//add repeated events to event cache map
+		if(!ev.isTrash()){
+			if(ev.isMultipleDaysLong()){
+
+				//Beginning of event
+				var cl = Object.create(ev);
+				cl.summary = "Beginn von " + cl.getPrettierSummary();
+				cl.endDate = new Time();
+				this.addToEventMap(ev.startDate.toJSDate(), cl);
+
+				//End of event
+				cl = Object.create(ev);
+				cl.summary = "Ende von " + cl.getPrettierSummary();
+				cl.startDate = new Time();
+
+				//if event ends on 00:00, set the end day to the day before to display it correctly
+				var e = ev.endDate.toJSDate();
+				if(e.getHours() == 0 && e.getMinutes() == 0){
+					e.setDate(e.getDate()-1)
+				}
+				this.addToEventMap(e, cl);
+
+			}
+			else{
+				this.addToEventMap(ev.startDate.toJSDate(), ev);
+			}
+		}
+		
+
+	}
+
+	addToEventMap(date: Date, ev: CalendarEvent){
+		const dateKey = date.toDateString()
+		if (!this.eventCache.has(dateKey)) {
+			this.eventCache.set(dateKey, []);
+		}
+		this.eventCache.get(dateKey)!.push(ev);
 	}
 
 	getIsMerged() {
@@ -715,32 +759,8 @@ class Calendar {
 	}
 
 	getEvents(date: Time) {
-		var today: CalendarEvent[];
-		today = []
-		for(let i = 0; i < this.items.length; i++) {
-			var e = this.items[i];
-			if(e.isMultipleDaysLong() && !e.isTrash()) {
-				if(e.isBeginningDate(date)) {
-					var cl = Object.create(e);
-					cl.summary = "Beginn von " + cl.getPrettierSummary();
-					cl.endDate = new Time();
-					today.push(cl)
-				}
-				else if(e.isEndDate(date)) {
-					var cl = Object.create(e);
-					cl.summary = "Ende von " + cl.getPrettierSummary();
-					cl.startDate = new Time();
-					today.push(cl)
-				}
-			}
-			else {
-				if(e.isToday(date)) {
-					today.push(this.items[i]);
-
-				}
-			}
-		}
-		return today;
+		var todayy = this.eventCache.get(date.toJSDate().toDateString())
+		return todayy ? todayy: []
 	}
 
 	getAllEvents() {
