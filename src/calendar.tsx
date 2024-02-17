@@ -4,7 +4,7 @@ import { testcontent } from './testics';
 import { testcontent2 } from './testics2';
 import React, { useEffect, useState } from "react";
 import html2canvas from "html2canvas";
-import { Button, Table, Form, Container, DropdownButton, Accordion } from "react-bootstrap";
+import { Button, Table, Form, Container, DropdownButton, Accordion, Spinner } from "react-bootstrap";
 import userEvent from "@testing-library/user-event";
 import DropdownItem from "react-bootstrap/esm/DropdownItem";
 import AccordionHeader from "react-bootstrap/esm/AccordionHeader";
@@ -437,9 +437,8 @@ export function CalendarList() {
 					<AccordionHeader>Download your Calendar</AccordionHeader>
 					<AccordionBody>
 						<p>
-							If you are happy with how your calendar looks, click this button to download it. <br></br>
+							If you are happy with how your calendar looks, click the Button below to download it. <br></br>
 						</p>
-						<DownloadButton startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} />
 					</AccordionBody>
 				</AccordionItem>
 			</Accordion>
@@ -449,8 +448,8 @@ export function CalendarList() {
 					<AccordionHeader>Print your Calendar</AccordionHeader>
 					<AccordionBody>
 						<p>
-							After clicking the download button, your calendar should be downloaded as individual images.
-							<br></br>Open your "Downloads" folder and print them as you like.
+							After clicking the download button, your calendar should be downloaded as a PDF document.
+							<br></br>Open your "Downloads" folder and print it.
 						</p>
 					</AccordionBody>
 				</AccordionItem>
@@ -488,14 +487,28 @@ export function CalendarList() {
 }
 
 function DownloadButton({ startOfCalendar, endOfCalendar }) {
-	return <Button onClick={() => {
+	const [downloading, setDownloading] = useState(false);
+
+	return <>
+	<Button onClick={() => {
 		/*
 		MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
 			downloadHTMLElementWithID(monthAndYear);
 		});
 		*/
-		downloadAsPDF(startOfCalendar, endOfCalendar);
-	}}>Download</Button>;
+		setDownloading(true);
+		downloadAsPDF(startOfCalendar, endOfCalendar).then(()=>{
+			setDownloading(false)
+		})
+	}}>Download</Button>
+	{
+		downloading &&
+		<div style={{marginTop: 5}}>
+			<Spinner></Spinner>
+			<p>Creating PDF...</p>
+		</div>
+	}
+	</> ;
 }
 
 function Result(props) {
@@ -967,7 +980,7 @@ function downloadAsPDF(startOfCalendar, endOfCalendar) {
 		promises.push(getDownloadLink(monthAndYear))
 	});
 
-	Promise.all(promises).then(links => {
+	return Promise.all(promises).then(links => {
 		const urls = links.map((link) => link.href)
 		createPdf(urls, "Calendar-"+startOfCalendar+"-"+endOfCalendar)
 	})
