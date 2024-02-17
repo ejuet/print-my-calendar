@@ -939,7 +939,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 						return <tr key={day.toString()} >
 							<td className="day" style={tdstyle}>
 								<b style={{ 
-									fontSize:(lineHeight / 100) * 20 * 0.65 * size * (fontSize / 100) + "px"
+									fontSize:(lineHeight / 100) * 33 * 0.65 * size * (fontSize / 100) + "px"
 									}}>
 									{Language.getWeekdayName(day).slice(0, 2) + " " + day.day.toString()}
 								</b>
