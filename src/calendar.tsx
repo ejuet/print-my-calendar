@@ -257,7 +257,7 @@ export function CalendarList() {
 				</AccordionItem>
 
 			</Accordion>
-			<Accordion>
+			<Accordion defaultActiveKey={"0"}>
 				<Accordion.Item eventKey="0">
 					<AccordionHeader>Upload Files</AccordionHeader>
 					<AccordionBody>
@@ -294,7 +294,7 @@ export function CalendarList() {
 			</Accordion>
 
 			<Accordion>
-				<AccordionItem>
+				<AccordionItem eventKey="0">
 					<AccordionHeader>
 						Preview your Calendar
 					</AccordionHeader>
