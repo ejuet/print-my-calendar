@@ -440,7 +440,7 @@ export function CalendarList() {
 
 			<Accordion>
 				<AccordionItem eventKey="0">
-					<AccordionHeader>Download your Calendar</AccordionHeader>
+					<AccordionHeader>Generate a PDF File</AccordionHeader>
 					<AccordionBody>
 						<p>
 							If you are happy with how your calendar looks, click the Button below to turn it into a PDF File. <br></br>
