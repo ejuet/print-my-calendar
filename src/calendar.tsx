@@ -242,7 +242,7 @@ export function CalendarList() {
 										<li>Go to your Google Calendar. <a href="https://calendar.google.com/" target="_blank">Click here</a></li>
 										<li>Click the Zahnradsymbol in the top right corner and then click <code>Settings</code>.</li>
 										<li>Click <code>Importieren & Exportieren</code> and then click <code>Exportieren</code>.</li>
-										<li>Upload the Files in the next section.</li>
+										<li>Put the Files in the next section.</li>
 									</ul>
 								</AccordionBody>
 							</AccordionItem>
@@ -265,7 +265,7 @@ export function CalendarList() {
 			</Accordion>
 			<Accordion defaultActiveKey={"0"}>
 				<Accordion.Item eventKey="0">
-					<AccordionHeader>Upload Files</AccordionHeader>
+					<AccordionHeader>Import Your Files</AccordionHeader>
 					<AccordionBody>
 						<input
 							type="file"
