@@ -11,6 +11,8 @@ import AccordionHeader from "react-bootstrap/esm/AccordionHeader";
 import AccordionBody from "react-bootstrap/esm/AccordionBody";
 import AccordionItem from "react-bootstrap/esm/AccordionItem";
 
+import { PDFDocument, StandardFonts, rgb, PageSizes } from 'pdf-lib'
+
 const useUmlaute = true;
 const defaultLanguage: string = "de-DE";
 const nicerTrashcanNames = true;
@@ -403,7 +405,7 @@ export function CalendarList() {
 							<MyNumberInput value={fontSizeHeading} onBlur={(e) => { setFontSizeHeading(e.target.value) }} min="0" max="" />
 						</div>
 
-						
+
 						<div className="d-flex justify-content-center" style={{ gap: 10, margin: 7 }}>
 							<h2>Width (%):</h2>
 							<MyNumberInput value={calendarWidth} onBlur={(e) => { setCalendarWidth(e.target.value) }} min="1" max="" />
@@ -487,9 +489,12 @@ export function CalendarList() {
 
 function DownloadButton({ startOfCalendar, endOfCalendar }) {
 	return <Button onClick={() => {
+		/*
 		MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
 			downloadHTMLElementWithID(monthAndYear);
 		});
+		*/
+		downloadAsPDF(startOfCalendar, endOfCalendar);
 	}}>Download</Button>;
 }
 
@@ -637,7 +642,7 @@ class CalendarEvent {
 		let e = this.endDate.toJSDate();
 
 		return (
-			Math.abs((this.startDate.toJSDate().valueOf()-this.endDate.toJSDate().valueOf())/(1000*60*60*24)) == 1 &&
+			Math.abs((this.startDate.toJSDate().valueOf() - this.endDate.toJSDate().valueOf()) / (1000 * 60 * 60 * 24)) == 1 &&
 			s.getHours() == 0 && e.getHours() == 0 && s.getMinutes() == 0 && e.getMinutes() == 0
 		)
 	}
@@ -699,8 +704,8 @@ class Calendar {
 	private isMerged: boolean
 	width: number
 
-	
-    eventCache: Map<string, CalendarEvent[]>; // Map to cache events by date
+
+	eventCache: Map<string, CalendarEvent[]>; // Map to cache events by date
 
 	constructor(name: string) {
 		this.items = [];
@@ -716,8 +721,8 @@ class Calendar {
 		this.items.push(ev);
 
 		//add repeated events to event cache map
-		if(!ev.isTrash()){
-			if(ev.isMultipleDaysLong()){
+		if(!ev.isTrash()) {
+			if(ev.isMultipleDaysLong()) {
 
 				//Beginning of event
 				var cl = Object.create(ev);
@@ -732,23 +737,23 @@ class Calendar {
 
 				//if event ends on 00:00, set the end day to the day before to display it correctly
 				var e = ev.endDate.toJSDate();
-				if(e.getHours() == 0 && e.getMinutes() == 0){
-					e.setDate(e.getDate()-1)
+				if(e.getHours() == 0 && e.getMinutes() == 0) {
+					e.setDate(e.getDate() - 1)
 				}
 				this.addToEventMap(e, cl);
 
 			}
-			else{
+			else {
 				this.addToEventMap(ev.startDate.toJSDate(), ev);
 			}
 		}
-		
+
 
 	}
 
-	addToEventMap(date: Date, ev: CalendarEvent){
+	addToEventMap(date: Date, ev: CalendarEvent) {
 		const dateKey = date.toDateString()
-		if (!this.eventCache.has(dateKey)) {
+		if(!this.eventCache.has(dateKey)) {
 			this.eventCache.set(dateKey, []);
 		}
 		this.eventCache.get(dateKey)!.push(ev);
@@ -760,7 +765,7 @@ class Calendar {
 
 	getEvents(date: Time) {
 		var todayy = this.eventCache.get(date.toJSDate().toDateString())
-		return todayy ? todayy: []
+		return todayy ? todayy : []
 	}
 
 	getAllEvents() {
@@ -859,7 +864,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 }) {
 
 	return MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
-		return <div style={{ width: size * 1100 * (calendarWidth / 100) + "px", margin: "auto" }} key={monthAndYear} className={"calendar " + monthAndYear}>
+		return <div style={{ width: size * 1100 * (calendarWidth / 100) + "px", margin: "auto" }} key={monthAndYear} className={"calendar " + monthAndYear} id={monthAndYear}>
 			<p style={{ fontFamily: fontFamily, fontSize: size * 6 * (calendarWidth / 100) + "em", marginTop: size * 0.05 + "em", marginBottom: size * 0.07 + "em", contentVisibility: "visible !important" }} className="monthname">{Language.getMonthName(monthAndYear)}</p>
 			<Table bordered style={{
 				fontSize: 1.8 * size + "em",
@@ -914,8 +919,65 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 	});
 }
 
+async function createPdf(urls, filename) {
+	const pdfDoc = await PDFDocument.create()
+
+	for(const url of urls) {
+
+		// Load the image
+		const imageBytes = await fetch(url).then(response => response.arrayBuffer());
+		const image = await pdfDoc.embedJpg(imageBytes);
+
+		// Add a new page for each image
+		const page = pdfDoc.addPage(PageSizes.A4);
+
+		//TODO hiermit auf DinA4 festgelegt, aber dumm wenn nicht vollständige seite zb nur paar zeilen
+		const { width, height } = page.getSize();
+		const fac = 0.95;
+		const imageSize = { width: width * fac, height: height * fac }; // Adjust image size as needed
+
+		// Calculate image position
+		const x = (width - imageSize.width) / 2;
+		const y = (height - imageSize.height) / 2;
+
+		// Draw the image onto the page
+		page.drawImage(image, {
+			x,
+			y,
+			width: imageSize.width,
+			height: imageSize.height,
+		});
+	}
+
+	const pdfBytes = await pdfDoc.save()
+
+	// Convert bytes to a blob
+	const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+
+	// Create download link
+	const downloadLink = document.createElement('a');
+	downloadLink.href = URL.createObjectURL(pdfBlob);
+	downloadLink.download = filename+'.pdf';
+	downloadLink.click();
+}
+
+function downloadAsPDF(startOfCalendar, endOfCalendar) {
+	var promises = [];
+	MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
+		promises.push(getDownloadLink(monthAndYear))
+	});
+
+	Promise.all(promises).then(links => {
+		const urls = links.map((link) => link.href)
+		createPdf(urls, "Calendar-"+startOfCalendar+"-"+endOfCalendar)
+	})
+}
+
+
 
 function downloadHTMLElementWithID(monthAndYear: string, parentID: string = "") {
+	getDownloadLink(monthAndYear).then(()=>link.click())
+	return;
 	var els = document.getElementsByClassName(monthAndYear);
 	if(parentID != "") {
 		var parent = document.getElementById(parentID)! as HTMLElement;
@@ -927,6 +989,7 @@ function downloadHTMLElementWithID(monthAndYear: string, parentID: string = "") 
 			var link = document.createElement('a');
 			link.download = monthAndYear + '.jpg';
 			link.href = canvas.toDataURL("image/jpeg", 0.9);
+			console.log(link.href);
 			link.click();
 		});
 	}
@@ -934,6 +997,33 @@ function downloadHTMLElementWithID(monthAndYear: string, parentID: string = "") 
 		(document.getElementById(parentID)! as HTMLElement).style.setProperty("display", "none")
 	}
 
+}
+
+//TODO monthAndYear was initially taken from classname and not id, check if classname is important anywhere else and if not remove it from classname
+function getDownloadLink(monthAndYear: string) {
+	return new Promise((resolve, reject) => {
+		var els = document.getElementById(monthAndYear);
+		html2canvas(els, { scrollX: -window.scrollX, scale: 6 }).then(canvas => {
+			var link = document.createElement('a');
+			link.download = monthAndYear + '.jpg';
+			link.href = canvas.toDataURL("image/jpeg", 0.9);
+			console.log(link.href);
+			resolve(link); // Resolve the promise with the link
+		}).catch(error => {
+			reject(error); // Reject the promise if there's an error
+		});
+	});
+
+
+	var els = document.getElementById(monthAndYear);
+	html2canvas(els as HTMLElement, { scrollX: -window.scrollX, scale: 6 }).then(canvas => {
+		var link = document.createElement('a');
+		link.download = monthAndYear + '.jpg';
+		link.href = canvas.toDataURL("image/jpeg", 0.9);
+		console.log(link.href);
+
+		return link;
+	});
 }
 
 function getDaysBetween(start: Time, end: Time) {
