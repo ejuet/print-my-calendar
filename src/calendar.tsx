@@ -734,31 +734,29 @@ class Calendar {
 		this.items.push(ev);
 
 		//add repeated events to event cache map
-		if(!ev.isTrash()) {
-			if(ev.isMultipleDaysLong()) {
+		if(ev.isMultipleDaysLong()) {
 
-				//Beginning of event
-				var cl = Object.create(ev);
-				cl.summary = "Beginn von " + cl.getPrettierSummary();
-				cl.endDate = new Time();
-				this.addToEventMap(ev.startDate.toJSDate(), cl);
+			//Beginning of event
+			var cl = Object.create(ev);
+			cl.summary = "Beginn von " + cl.getPrettierSummary();
+			cl.endDate = new Time();
+			this.addToEventMap(ev.startDate.toJSDate(), cl);
 
-				//End of event
-				cl = Object.create(ev);
-				cl.summary = "Ende von " + cl.getPrettierSummary();
-				cl.startDate = new Time();
+			//End of event
+			cl = Object.create(ev);
+			cl.summary = "Ende von " + cl.getPrettierSummary();
+			cl.startDate = new Time();
 
-				//if event ends on 00:00, set the end day to the day before to display it correctly
-				var e = ev.endDate.toJSDate();
-				if(e.getHours() == 0 && e.getMinutes() == 0) {
-					e.setDate(e.getDate() - 1)
-				}
-				this.addToEventMap(e, cl);
-
+			//if event ends on 00:00, set the end day to the day before to display it correctly
+			var e = ev.endDate.toJSDate();
+			if(e.getHours() == 0 && e.getMinutes() == 0) {
+				e.setDate(e.getDate() - 1)
 			}
-			else {
-				this.addToEventMap(ev.startDate.toJSDate(), ev);
-			}
+			this.addToEventMap(e, cl);
+
+		}
+		else {
+			this.addToEventMap(ev.startDate.toJSDate(), ev);
 		}
 
 
