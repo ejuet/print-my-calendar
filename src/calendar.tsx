@@ -52,8 +52,8 @@ export function exampleReadICS(textcontent) {
 
 			let calenderEv = new CalendarEvent(next, ev.duration, ev.summary);
 			calendar.addEvent(calenderEv);
-			
-			if(calenderEv.startDate.toJSDate().getFullYear()>(new Date()).getFullYear()+15){
+
+			if(calenderEv.startDate.toJSDate().getFullYear() > (new Date()).getFullYear() + 15) {
 				break;
 			}
 		}
@@ -183,7 +183,10 @@ const fonts = [
 	'Yu Gothic',
 ];
 export function CalendarList() {
-	const [calendars, setCalendars] = useState([exampleReadICS(testcontent)]);
+	const [calendars, setCalendars] = useState([
+		//exampleReadICS(testcontent)
+		new Calendar("Column")
+	]);
 
 	const [startOfCalendar, setStart] = useState(new Time({
 		year: (new Date()).getFullYear(),
@@ -616,11 +619,31 @@ class CalendarEvent {
 
 	isToday(date: Time) {
 		var utcTimezone = Timezone.utcTimezone;
-		return date.compareDateOnlyTz(this.startDate, utcTimezone) >= 0 && date.compareDateOnlyTz(this.endDate, utcTimezone) <= 0
+		return (
+			date.compareDateOnlyTz(this.startDate, utcTimezone) >= 0 && date.compareDateOnlyTz(this.endDate, utcTimezone) <= 0
+			&& (this.isFullDayEvent() ? date.compareDateOnlyTz(this.endDate, utcTimezone) < 0 : true)
+		)
+	}
+
+	isFullDayEvent() {
+		let s = this.startDate.toJSDate();
+		let e = this.endDate.toJSDate();
+
+		return (
+			Math.abs(this.startDate.compareDateOnlyTz(this.endDate, Timezone.localTimezone)) == 1 &&
+			s.getHours() == 0 && e.getHours() == 0 && s.getMinutes() == 0 && e.getMinutes() == 0
+		)
 	}
 
 	isMultipleDaysLong() {
-		return (this.startDate.compareDateOnlyTz(this.endDate, Timezone.localTimezone) < 0)
+		return (
+			//event is more than one day long
+			this.startDate.compareDateOnlyTz(this.endDate, Timezone.localTimezone) < 0
+
+			//Event is not exactly 1 day long:
+			&& !this.isFullDayEvent()
+
+		)
 	}
 
 	isBeginningDate(date: Time) {
