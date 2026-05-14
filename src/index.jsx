@@ -9,7 +9,7 @@ import {
 } from "react-router-dom";
 
 import { Container, Nav, Navbar } from "react-bootstrap";
-import { CalendarList, Credits } from './calendar.tsx';
+import { CalendarList, Credits } from './calendar';
 
 const router = createHashRouter([
   {
