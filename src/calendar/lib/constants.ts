@@ -3,11 +3,13 @@ export const defaultLanguage = "de-DE";
 export const nicerTrashcanNames = true;
 
 export const trashcanNameReplacements: Record<string, string> = {
-	Restabfallbehaelter: "Restmüll",
-	"Gelbe Grossbehaelter": "Große Gelbe Tonne",
-	"Gelbe Behaelter": "Gelbe Tonne",
-	Bioabfallbehaelter: "Grüne Tonne",
-	Papierbehaelter: "Blaue Tonne",
+	Restabfallbehaelter: "⚫️",
+	"Gelbe Grossbehaelter": "💛💛",
+	"Gelbe Behaelter": "💛",
+	Bioabfallbehaelter: "💚",
+	Papierbehaelter: "🔵",
+	"Weihnachtsbaeume": "🎄",
+	"Sperrmuell": "🚚"
 };
 
 export const fonts = [
