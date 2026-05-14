@@ -2,7 +2,7 @@ export const useUmlaute = true;
 export const defaultLanguage = "de-DE";
 export const nicerTrashcanNames = true;
 
-export const trashcanNameReplacements: Record<string, string> = {
+export const defaultEventNameReplacements: Record<string, string> = {
 	Restabfallbehaelter: "⚫️",
 	"Gelbe Grossbehaelter": "💛💛",
 	"Gelbe Behaelter": "💛",

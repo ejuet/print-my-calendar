@@ -2,6 +2,7 @@ import React from "react";
 import { Time } from "ical.js";
 import { Table } from "react-bootstrap";
 import { Calendar, CalendarEvent } from "../lib/calendar-model";
+import { defaultEventNameReplacements } from "../lib/constants";
 import { CalendarDay, getDaysInMonths, Language, mapMonthMap } from "../lib/date";
 
 type PreviewProps = {
@@ -14,6 +15,7 @@ type PreviewProps = {
 	calendarWidth?: number;
 	fontSize?: number;
 	fontSizeHeading?: number;
+	eventNameReplacements?: Record<string, string>;
 };
 
 type CalendarPreviewProps = PreviewProps & {
@@ -37,6 +39,7 @@ export function CalendarPreview({
 	calendarWidth = 100,
 	fontSize = 400,
 	fontSizeHeading = 100,
+	eventNameReplacements = defaultEventNameReplacements,
 }: CalendarPreviewProps) {
 	const pageWidth = size * 4000 * (calendarWidth / 100);
 	const tableFontSize = (lineHeight / 100) * 40 * 0.65 * size * (fontSize / 100);
@@ -90,7 +93,7 @@ export function CalendarPreview({
 							})}
 						</tr>
 					</thead>
-					<tbody>{days.map((day, index) => renderDayRow(day, index, { calendars, preview, previewAmount, lineHeight, size, fontSize, tableFontSize }))}</tbody>
+					<tbody>{days.map((day, index) => renderDayRow(day, index, { calendars, preview, previewAmount, lineHeight, size, fontSize, tableFontSize, eventNameReplacements }))}</tbody>
 				</Table>
 			</div>
 		);
@@ -108,6 +111,7 @@ function renderDayRow(
 		size,
 		fontSize,
 		tableFontSize,
+		eventNameReplacements,
 	}: {
 		calendars: Calendar[];
 		preview: boolean;
@@ -116,6 +120,7 @@ function renderDayRow(
 		size: number;
 		fontSize: number;
 		tableFontSize: number;
+		eventNameReplacements: Record<string, string>;
 	},
 ) {
 	if(preview) {
@@ -153,7 +158,7 @@ function renderDayRow(
 					</b>
 				</div>
 			</td>
-			{calendars.map((cal, i) => renderEventCell(cal, day, i, { tdstyle }))}
+			{calendars.map((cal, i) => renderEventCell(cal, day, i, { tdstyle, eventNameReplacements }))}
 		</tr>
 	);
 }
@@ -162,11 +167,11 @@ function renderEventCell(
 	cal: Calendar,
 	day: Time,
 	index: number,
-	{ tdstyle }: { tdstyle: React.CSSProperties },
+	{ tdstyle, eventNameReplacements }: { tdstyle: React.CSSProperties; eventNameReplacements: Record<string, string> },
 ) {
 	const content = cal
 		.getEvents(day)
-		.map((ev: CalendarEvent) => ev.getFullSummary())
+		.map((ev: CalendarEvent) => ev.getFullSummary(eventNameReplacements))
 		.join(", ");
 
 	return (

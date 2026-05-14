@@ -12,8 +12,13 @@ import { DownloadButton } from "../components/download-button";
 import { DatePicker, MyNumberInput, MyTextInput } from "../components/inputs";
 import { Preview } from "../components/preview";
 import { Calendar } from "../lib/calendar-model";
-import { fonts } from "../lib/constants";
+import { defaultEventNameReplacements, fonts } from "../lib/constants";
 import { exampleReadICS } from "../lib/ics";
+
+type EventNameReplacement = {
+	from: string;
+	to: string;
+};
 
 export function ListEvents() {
 	return (
@@ -67,6 +72,9 @@ function ExampleEventList() {
 
 export function CalendarList() {
 	const [calendars, setCalendars] = useState<Calendar[]>([]);
+	const [eventNameReplacements, setEventNameReplacements] = useState<EventNameReplacement[]>(
+		Object.entries(defaultEventNameReplacements).map(([from, to]) => ({ from, to })),
+	);
 	const [startOfCalendar, setStart] = useState(
 		new Time({
 			year: new Date().getFullYear(),
@@ -86,6 +94,7 @@ export function CalendarList() {
 	const [fontSize, setFontSize] = useState(200);
 	const [fontSizeHeading, setFontSizeHeading] = useState(140);
 	const [calendarWidth, setCalendarWidth] = useState(130);
+	const replacementMap = toReplacementMap(eventNameReplacements);
 
 	return (
 		<>
@@ -214,6 +223,48 @@ export function CalendarList() {
 
 				<Accordion>
 					<AccordionItem eventKey="0">
+						<AccordionHeader>Edit Event Name Replacements</AccordionHeader>
+						<AccordionBody>
+							<p>Replace event names or parts of event names with your own labels, words, or emoji.</p>
+							{eventNameReplacements.map((replacement, index) => {
+								return (
+									<div key={index} className="d-flex justify-content-center align-items-center" style={{ gap: 10, margin: 15, flexWrap: "wrap" }}>
+										<MyTextInput
+											value={replacement.from}
+											onBlur={(e) => {
+												setEventNameReplacements((old) =>
+													old.map((item, itemIndex) => itemIndex === index ? { ...item, from: e.target.value } : item),
+												);
+											}}
+										/>
+										<span>→</span>
+										<MyTextInput
+											value={replacement.to}
+											onBlur={(e) => {
+												setEventNameReplacements((old) =>
+													old.map((item, itemIndex) => itemIndex === index ? { ...item, to: e.target.value } : item),
+												);
+											}}
+										/>
+										<Button variant="outline-danger" onClick={() => setEventNameReplacements((old) => old.filter((_, itemIndex) => itemIndex !== index))}>
+											Delete
+										</Button>
+									</div>
+								);
+							})}
+
+							<div className="d-flex justify-content-center" style={{ gap: 10, marginTop: 15, flexWrap: "wrap" }}>
+								<Button onClick={() => setEventNameReplacements((old) => [...old, { from: "", to: "" }])}>Add Replacement</Button>
+								<Button variant="outline-secondary" onClick={() => setEventNameReplacements(Object.entries(defaultEventNameReplacements).map(([from, to]) => ({ from, to })))}>
+									Reset to Trash Defaults
+								</Button>
+							</div>
+						</AccordionBody>
+					</AccordionItem>
+				</Accordion>
+
+				<Accordion>
+					<AccordionItem eventKey="0">
 						<AccordionHeader>Calendar Settings</AccordionHeader>
 						<AccordionBody>
 							<h3>Start Date</h3>
@@ -292,6 +343,7 @@ export function CalendarList() {
 				startOfCalendar={startOfCalendar}
 				endOfCalendar={endOfCalendar}
 				calendars={calendars}
+				eventNameReplacements={replacementMap}
 				previewAmount={prevAmount}
 				fontSize={fontSize}
 				fontSizeHeading={fontSizeHeading}
@@ -299,6 +351,15 @@ export function CalendarList() {
 			/>
 		</>
 	);
+}
+
+function toReplacementMap(replacements: EventNameReplacement[]) {
+	return replacements.reduce<Record<string, string>>((result, replacement) => {
+		if(replacement.from !== "") {
+			result[replacement.from] = replacement.to;
+		}
+		return result;
+	}, {});
 }
 
 function handleFileUpload(files: FileList | null, setCalendars: React.Dispatch<React.SetStateAction<Calendar[]>>) {

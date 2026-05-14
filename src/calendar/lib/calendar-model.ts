@@ -1,5 +1,5 @@
 import { Time, Timezone } from "ical.js";
-import { defaultLanguage, nicerTrashcanNames, trashcanNameReplacements, useUmlaute } from "./constants";
+import { defaultEventNameReplacements, defaultLanguage, nicerTrashcanNames, useUmlaute } from "./constants";
 
 export class CalendarEvent {
 	startDate: any;
@@ -7,6 +7,7 @@ export class CalendarEvent {
 	duration: any;
 	durationInSeconds: number;
 	endDate: any;
+	private summaryPrefix: string;
 	private istrash: boolean;
 	private belongsToCalendars!: Calendar;
 
@@ -16,9 +17,10 @@ export class CalendarEvent {
 		this.durationInSeconds = duration.toSeconds();
 		this.summary = summary.trim();
 		this.endDate = startDate.clone();
+		this.summaryPrefix = "";
 		this.endDate.addDuration(duration);
 
-		this.istrash = Object.keys(trashcanNameReplacements).some((key) => this.summary === key);
+		this.istrash = Object.keys(defaultEventNameReplacements).some((key) => this.summary === key);
 	}
 
 	addedToCalendar(cal: Calendar) {
@@ -29,12 +31,16 @@ export class CalendarEvent {
 		return this.belongsToCalendars;
 	}
 
-	getPrettierSummary() {
+	setSummaryPrefix(prefix: string) {
+		this.summaryPrefix = prefix;
+	}
+
+	getPrettierSummary(replacements: Record<string, string> = defaultEventNameReplacements) {
 		let result = this.summary;
 
 		if(nicerTrashcanNames) {
-			Object.keys(trashcanNameReplacements).forEach((key) => {
-				result = result.replaceAll(key, trashcanNameReplacements[key]);
+			Object.keys(replacements).forEach((key) => {
+				result = result.replaceAll(key, replacements[key]);
 			});
 		}
 
@@ -83,7 +89,7 @@ export class CalendarEvent {
 		return this.isMultipleDaysLong() && this.endDate.compareDateOnlyTz(date, Timezone.localTimezone) === 0;
 	}
 
-	getFullSummary() {
+	getFullSummary(replacements: Record<string, string> = defaultEventNameReplacements) {
 		const startTime =
 			this.startDate.hour !== 0 || this.startDate.minute !== 0 || this.startDate.second !== 0
 				? this.startDate.toJSDate().toLocaleTimeString(defaultLanguage)
@@ -108,7 +114,7 @@ export class CalendarEvent {
 			timeLabel = ` (${timeLabel})`;
 		}
 
-		return this.getPrettierSummary() + timeLabel;
+		return `${this.summaryPrefix}${this.getPrettierSummary(replacements)}${timeLabel}`;
 	}
 }
 
@@ -133,12 +139,12 @@ export class Calendar {
 
 		if(ev.isMultipleDaysLong()) {
 			let clonedEvent = Object.create(ev);
-			clonedEvent.summary = `Beginn von ${clonedEvent.getPrettierSummary()}`;
+			clonedEvent.setSummaryPrefix("Beginn von ");
 			clonedEvent.endDate = new Time();
 			this.addToEventMap(ev.startDate.toJSDate(), clonedEvent);
 
 			clonedEvent = Object.create(ev);
-			clonedEvent.summary = `Ende von ${clonedEvent.getPrettierSummary()}`;
+			clonedEvent.setSummaryPrefix("Ende von ");
 			clonedEvent.startDate = new Time();
 
 			const endDate = ev.endDate.toJSDate();
