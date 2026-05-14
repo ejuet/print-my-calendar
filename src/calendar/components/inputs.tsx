@@ -74,8 +74,11 @@ export function DatePicker({
 	const [month, setMonth] = useState(defaultMonth);
 
 	useEffect(() => {
+		// Only publish when the local date parts change. The parent passes an inline
+		// callback, so depending on `onNewDate` here would retrigger this effect on
+		// every parent render and create a render loop.
 		onNewDate(new Time({ year, month, day }));
-	}, [day, month, onNewDate, year]);
+	}, [day, month, year]);
 
 	return (
 		<Container>
