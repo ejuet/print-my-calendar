@@ -3,6 +3,10 @@
   src: url(Please\ write\ me\ a\ song.ttf);
 }
 
+.App {
+  text-align: center;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
