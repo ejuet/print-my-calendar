@@ -82,10 +82,10 @@ export function CalendarList() {
 		}),
 	);
 	const [prevAmount, setPrevAmount] = useState(31);
-	const [fontFamily, setFontFamily] = useState("PleaseWriteMeASong");
-	const [fontSize, setFontSize] = useState(100);
-	const [fontSizeHeading, setFontSizeHeading] = useState(100);
-	const [calendarWidth, setCalendarWidth] = useState(100);
+	const [fontFamily, setFontFamily] = useState("Calibri");
+	const [fontSize, setFontSize] = useState(200);
+	const [fontSizeHeading, setFontSizeHeading] = useState(140);
+	const [calendarWidth, setCalendarWidth] = useState(130);
 
 	return (
 		<>
