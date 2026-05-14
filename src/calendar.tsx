@@ -906,7 +906,7 @@ function CalendarPreview({ startOfCalendar, endOfCalendar, calendars, size, prev
 
 	return MonthMap.map(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear: string, days: Time[]) => {
 		return <div style={{ width: pageWidth + "px", margin: "auto" }} key={monthAndYear} className={"calendar " + monthAndYear} id={monthAndYear}>
-			<p style={{ fontFamily: fontFamily, fontSize: (lineHeight / 100) * 120 * 0.65 * size * (fontSizeHeading / 100)+"px", marginTop: size * 0.05 + "em", marginBottom: size * 0.07 + "em", contentVisibility: "visible !important" }} className="monthname">{Language.getMonthName(monthAndYear)}</p>
+			<p style={{ fontFamily: fontFamily, fontSize: (lineHeight / 100) * 120 * 0.65 * size * (fontSizeHeading / 100)+"px", marginTop: size * 0.05 + "em", marginBottom: size * 0.07 + "em", contentVisibility: "visible" }} className="monthname">{Language.getMonthName(monthAndYear)}</p>
 			<Table bordered style={{
 				fontSize: 1.8 * size + "em",
 				verticalAlign: "middle",
@@ -1013,7 +1013,8 @@ async function createPdf(urls, filename) {
 	const pdfBytes = await pdfDoc.save()
 
 	// Convert bytes to a blob
-	const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+	const pdfBuffer = new Uint8Array(pdfBytes).buffer as ArrayBuffer;
+	const pdfBlob = new Blob([pdfBuffer], { type: 'application/pdf' });
 
 	// Create download link
 	const downloadLink = document.createElement('a');
@@ -1036,7 +1037,7 @@ function downloadAsPDF(startOfCalendar, endOfCalendar) {
 
 
 function downloadHTMLElementWithID(monthAndYear: string, parentID: string = "") {
-	getDownloadLink(monthAndYear).then(() => link.click())
+	getDownloadLink(monthAndYear).then((link: any) => link.click())
 }
 
 //TODO monthAndYear was initially taken from classname and not id, check if classname is important anywhere else and if not remove it from classname
