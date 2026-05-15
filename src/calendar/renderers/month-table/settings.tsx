@@ -1,7 +1,7 @@
 import React from "react";
 import { Form } from "react-bootstrap";
+import { FontFamilySelect } from "../../components/font-family-select";
 import { MyNumberInput } from "../../components/inputs";
-import { fonts } from "../../lib/constants";
 import { RendererSettingsProps } from "../types";
 
 export type MonthTableRendererSettings = {
@@ -54,19 +54,7 @@ export function MonthTableSettings({ settings, setSettings }: RendererSettingsPr
 
 			<div className="d-flex justify-content-center" style={{ gap: 10, margin: 7 }}>
 				<h2>Font:</h2>
-				<Form.Select
-					value={settings.fontFamily}
-					style={{ width: "20vw", fontFamily: settings.fontFamily }}
-					onChange={(e) => setSettings((old) => ({ ...old, fontFamily: e.target.value }))}
-				>
-					{fonts.map((fontFam) => {
-						return (
-							<option key={fontFam} style={{ fontFamily: fontFam }} value={fontFam}>
-								{fontFam}
-							</option>
-						);
-					})}
-				</Form.Select>
+				<FontFamilySelect value={settings.fontFamily} onChange={(fontFamily) => setSettings((old) => ({ ...old, fontFamily }))} />
 			</div>
 		</>
 	);
