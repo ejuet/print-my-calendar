@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { Time } from "ical.js";
 import { Button, Spinner } from "react-bootstrap";
-import { downloadAsPDF } from "../lib/export";
+import { CalendarRenderer, RendererPreviewProps } from "../renderers/types";
 
-export function DownloadButton({ startOfCalendar, endOfCalendar }: { startOfCalendar: Time; endOfCalendar: Time }) {
+export function DownloadButton({ renderer, rendererProps }: { renderer: CalendarRenderer; rendererProps: RendererPreviewProps }) {
 	const [downloading, setDownloading] = useState(false);
 
 	return (
@@ -11,7 +10,7 @@ export function DownloadButton({ startOfCalendar, endOfCalendar }: { startOfCale
 			<Button
 				onClick={() => {
 					setDownloading(true);
-					downloadAsPDF(startOfCalendar, endOfCalendar).finally(() => {
+					renderer.savePdf(rendererProps).finally(() => {
 						setDownloading(false);
 					});
 				}}

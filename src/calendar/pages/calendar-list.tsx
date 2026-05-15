@@ -10,10 +10,10 @@ import { testcontent } from "../../testics";
 import { testcontent2 } from "../../testics2";
 import { DownloadButton } from "../components/download-button";
 import { DatePicker, MyNumberInput, MyTextInput } from "../components/inputs";
-import { Preview } from "../components/preview";
 import { Calendar } from "../lib/calendar-model";
-import { defaultEventNameReplacements, fonts } from "../lib/constants";
+import { defaultEventNameReplacements } from "../lib/constants";
 import { exampleReadICS } from "../lib/ics";
+import { calendarRenderers, getCalendarRendererById } from "../renderers";
 
 type EventNameReplacement = {
 	from: string;
@@ -89,12 +89,22 @@ export function CalendarList() {
 			day: 31,
 		}),
 	);
-	const [prevAmount, setPrevAmount] = useState(31);
-	const [fontFamily, setFontFamily] = useState("Calibri");
-	const [fontSize, setFontSize] = useState(200);
-	const [fontSizeHeading, setFontSizeHeading] = useState(140);
-	const [calendarWidth, setCalendarWidth] = useState(130);
+	const [selectedRendererId, setSelectedRendererId] = useState(calendarRenderers[0]?.id ?? "");
+	const [rendererSettingsById, setRendererSettingsById] = useState<Record<string, unknown>>(() =>
+		Object.fromEntries(calendarRenderers.map((renderer) => [renderer.id, renderer.createDefaultSettings()])),
+	);
 	const replacementMap = toReplacementMap(eventNameReplacements);
+	const selectedRenderer = getCalendarRendererById(selectedRendererId);
+	const rendererSettings = (rendererSettingsById[selectedRenderer.id] ?? selectedRenderer.createDefaultSettings()) as never;
+	const RendererPreview = selectedRenderer.PreviewComponent;
+	const RendererSettings = selectedRenderer.SettingsComponent;
+	const rendererProps = {
+		startOfCalendar,
+		endOfCalendar,
+		calendars,
+		eventNameReplacements: replacementMap,
+		settings: rendererSettings,
+	};
 
 	return (
 		<>
@@ -151,10 +161,28 @@ export function CalendarList() {
 
 				<Accordion>
 					<AccordionItem eventKey="0">
+						<AccordionHeader>Choose a Calendar Layout</AccordionHeader>
+						<AccordionBody>
+							<p>Pick the layout renderer you want to use for preview and PDF export.</p>
+							<Form.Select value={selectedRenderer.id} onChange={(e) => setSelectedRendererId(e.target.value)}>
+								{calendarRenderers.map((renderer) => {
+									return (
+										<option key={renderer.id} value={renderer.id}>
+											{renderer.name}
+										</option>
+									);
+								})}
+							</Form.Select>
+						</AccordionBody>
+					</AccordionItem>
+				</Accordion>
+
+				<Accordion>
+					<AccordionItem eventKey="0">
 						<AccordionHeader>Preview your Calendar</AccordionHeader>
 						<AccordionBody>
 							<p>Scroll to the bottom of the page to preview your calendar.</p>
-							<p>Then, go to the next sections ("Rename and Reorder Columns" or "Calendar Settings") if you want to make any changes to your calendar.</p>
+							<p>Then, go to the next sections ("Rename and Reorder Columns", "Calendar Settings", or "Layout Settings") if you want to make any changes.</p>
 						</AccordionBody>
 					</AccordionItem>
 				</Accordion>
@@ -272,41 +300,27 @@ export function CalendarList() {
 
 							<h3>End Date</h3>
 							<DatePicker defaultYear={endOfCalendar.year} defaultMonth={endOfCalendar.month} defaultDay={endOfCalendar.day} onNewDate={(t) => setEnd(t.clone())} />
+						</AccordionBody>
+					</AccordionItem>
+				</Accordion>
 
-							<h1>Display Settings</h1>
-
-							<div className="d-flex justify-content-center" style={{ gap: 10, margin: 7 }}>
-								<h2>Font Size (%):</h2>
-								<MyNumberInput value={fontSize} onBlur={(e) => setFontSize(Number(e.target.value))} min="0" max="" />
-							</div>
-
-							<div className="d-flex justify-content-center" style={{ gap: 10, margin: 7 }}>
-								<h2>Font Size Heading (%):</h2>
-								<MyNumberInput value={fontSizeHeading} onBlur={(e) => setFontSizeHeading(Number(e.target.value))} min="0" max="" />
-							</div>
-
-							<div className="d-flex justify-content-center" style={{ gap: 10, margin: 7 }}>
-								<h2>Width (%):</h2>
-								<MyNumberInput value={calendarWidth} onBlur={(e) => setCalendarWidth(Number(e.target.value))} min="1" max="" />
-							</div>
-
-							<div style={{ gap: 10, margin: 7, display: "none" }}>
-								<h2>Amount of days to preview:</h2>
-								<MyNumberInput value={prevAmount} onBlur={(e) => setPrevAmount(Number(e.target.value))} min="" max="" />
-							</div>
-
-							<div className="d-flex justify-content-center" style={{ gap: 10, margin: 7 }}>
-								<h2>Font:</h2>
-								<Form.Select defaultValue={fontFamily} style={{ width: "20vw", fontFamily }} onChange={(e) => setFontFamily(e.target.value)}>
-									{fonts.map((fontFam) => {
-										return (
-											<option key={fontFam} style={{ fontFamily: fontFam }} value={fontFam}>
-												{fontFam}
-											</option>
-										);
-									})}
-								</Form.Select>
-							</div>
+				<Accordion>
+					<AccordionItem eventKey="0">
+						<AccordionHeader>Layout Settings</AccordionHeader>
+						<AccordionBody>
+							<RendererSettings
+								settings={rendererSettings}
+								setSettings={(update) => {
+									setRendererSettingsById((old) => {
+										const currentSettings = (old[selectedRenderer.id] ?? selectedRenderer.createDefaultSettings()) as never;
+										const nextSettings = typeof update === "function" ? update(currentSettings) : update;
+										return {
+											...old,
+											[selectedRenderer.id]: nextSettings,
+										};
+									});
+								}}
+							/>
 						</AccordionBody>
 					</AccordionItem>
 				</Accordion>
@@ -337,18 +351,8 @@ export function CalendarList() {
 			</div>
 
 			<h1>Result</h1>
-			<DownloadButton startOfCalendar={startOfCalendar} endOfCalendar={endOfCalendar} />
-			<Preview
-				fontFamily={fontFamily}
-				startOfCalendar={startOfCalendar}
-				endOfCalendar={endOfCalendar}
-				calendars={calendars}
-				eventNameReplacements={replacementMap}
-				previewAmount={prevAmount}
-				fontSize={fontSize}
-				fontSizeHeading={fontSizeHeading}
-				calendarWidth={calendarWidth}
-			/>
+			<DownloadButton renderer={selectedRenderer} rendererProps={rendererProps} />
+			<RendererPreview {...rendererProps} />
 		</>
 	);
 }
