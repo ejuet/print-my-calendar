@@ -8,11 +8,14 @@ export function DownloadButton({ renderer, rendererProps }: { renderer: Calendar
 	return (
 		<>
 			<Button
+				disabled={downloading}
 				onClick={() => {
 					setDownloading(true);
-					renderer.savePdf(rendererProps).finally(() => {
-						setDownloading(false);
-					});
+					setTimeout(() => {
+						renderer.savePdf(rendererProps).finally(() => {
+							setDownloading(false);
+						});
+					}, 0);
 				}}
 			>
 				Save as PDF
