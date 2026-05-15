@@ -20,6 +20,8 @@ type EventNameReplacement = {
 	to: string;
 };
 
+type EventTitleTemplateMap = Record<string, string>;
+
 export function ListEvents() {
 	return (
 		<>
@@ -75,6 +77,7 @@ export function CalendarList() {
 	const [eventNameReplacements, setEventNameReplacements] = useState<EventNameReplacement[]>(
 		Object.entries(defaultEventNameReplacements).map(([from, to]) => ({ from, to })),
 	);
+	const [eventTitleTemplatesByCalendar, setEventTitleTemplatesByCalendar] = useState<EventTitleTemplateMap>({});
 	const [startOfCalendar, setStart] = useState(
 		new Time({
 			year: new Date().getFullYear(),
@@ -103,6 +106,7 @@ export function CalendarList() {
 		endOfCalendar,
 		calendars,
 		eventNameReplacements: replacementMap,
+		eventTitleTemplatesByCalendar,
 		settings: rendererSettings,
 	};
 
@@ -287,6 +291,41 @@ export function CalendarList() {
 									Reset to Trash Defaults
 								</Button>
 							</div>
+						</AccordionBody>
+					</AccordionItem>
+				</Accordion>
+
+				<Accordion>
+					<AccordionItem eventKey="0">
+						<AccordionHeader>Edit Column Event Title Templates</AccordionHeader>
+						<AccordionBody>
+							<p>Wrap or rewrite event titles for a specific column. Use <code>{"{title}"}</code> where the event name should appear, for example <code>🎂 {"{title}"} 🎂</code>.</p>
+							{calendars.length === 0 && <p>Import or add a column first to configure its event title template.</p>}
+							{calendars.map((calendar, index) => (
+								<div key={calendar.id} className="d-flex justify-content-center align-items-center" style={{ gap: 10, margin: 15, flexWrap: "wrap" }}>
+									<div style={{ minWidth: 180, fontWeight: 700 }}>{calendar.name || `Column ${index + 1}`}</div>
+									<Form.Control
+										type="text"
+										placeholder='Example: 🎂 {title} 🎂'
+										defaultValue={eventTitleTemplatesByCalendar[calendar.id] ?? ""}
+										onBlur={(e) => {
+											const nextTemplate = e.target.value;
+											setEventTitleTemplatesByCalendar((old) => {
+												if(nextTemplate === "") {
+													const { [calendar.id]: _, ...rest } = old;
+													return rest;
+												}
+
+												return {
+													...old,
+													[calendar.id]: nextTemplate,
+												};
+											});
+										}}
+										style={{ maxWidth: 420 }}
+									/>
+								</div>
+							))}
 						</AccordionBody>
 					</AccordionItem>
 				</Accordion>

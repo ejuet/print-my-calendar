@@ -7,6 +7,7 @@ export type RendererCommonProps = {
 	endOfCalendar: Time;
 	calendars: Calendar[];
 	eventNameReplacements: Record<string, string>;
+	eventTitleTemplatesByCalendar: Record<string, string>;
 };
 
 /**

@@ -1,6 +1,20 @@
 import { Time, Timezone } from "ical.js";
 import { defaultEventNameReplacements, defaultLanguage, nicerTrashcanNames, useUmlaute } from "./constants";
 
+let calendarIdCounter = 0;
+
+export function applyEventTitleTemplate(title: string, template = "") {
+	if(template.trim() === "") {
+		return title;
+	}
+
+	if(template.includes("{title}")) {
+		return template.replaceAll("{title}", title);
+	}
+
+	return `${template} ${title}`.trim();
+}
+
 export class CalendarEvent {
 	startDate: any;
 	summary: string;
@@ -35,7 +49,7 @@ export class CalendarEvent {
 		this.summaryPrefix = prefix;
 	}
 
-	getPrettierSummary(replacements: Record<string, string> = defaultEventNameReplacements) {
+	getPrettierSummary(replacements: Record<string, string> = defaultEventNameReplacements, titleTemplate = "") {
 		let result = this.summary;
 
 		if(nicerTrashcanNames) {
@@ -48,7 +62,7 @@ export class CalendarEvent {
 			result = result.replaceAll("ae", "ä");
 		}
 
-		return result;
+		return applyEventTitleTemplate(result, titleTemplate);
 	}
 
 	isTrash() {
@@ -89,7 +103,7 @@ export class CalendarEvent {
 		return this.isMultipleDaysLong() && this.endDate.compareDateOnlyTz(date, Timezone.localTimezone) === 0;
 	}
 
-	getFullSummary(replacements: Record<string, string> = defaultEventNameReplacements) {
+	getFullSummary(replacements: Record<string, string> = defaultEventNameReplacements, titleTemplate = "") {
 		const startTime =
 			this.startDate.hour !== 0 || this.startDate.minute !== 0 || this.startDate.second !== 0
 				? this.startDate.toJSDate().toLocaleTimeString(defaultLanguage)
@@ -114,11 +128,12 @@ export class CalendarEvent {
 			timeLabel = ` (${timeLabel})`;
 		}
 
-		return `${this.summaryPrefix}${this.getPrettierSummary(replacements)}${timeLabel}`;
+		return `${this.summaryPrefix}${this.getPrettierSummary(replacements, titleTemplate)}${timeLabel}`;
 	}
 }
 
 export class Calendar {
+	id: string;
 	items: CalendarEvent[];
 	name: string;
 	private isMerged: boolean;
@@ -126,6 +141,7 @@ export class Calendar {
 	eventCache: Map<string, CalendarEvent[]>;
 
 	constructor(name: string) {
+		this.id = `calendar-${calendarIdCounter++}`;
 		this.items = [];
 		this.name = name;
 		this.isMerged = false;

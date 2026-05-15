@@ -30,7 +30,7 @@ type CalendarMonthLayout = {
 };
 
 export function MonthColumnsPreview(props: RendererPreviewProps<MonthColumnsRendererSettings>) {
-	const { startOfCalendar, endOfCalendar, calendars, eventNameReplacements, settings } = props;
+	const { startOfCalendar, endOfCalendar, calendars, eventNameReplacements, eventTitleTemplatesByCalendar, settings } = props;
 
 	return mapMonthMap(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear, days) => {
 		const availableTableHeight =
@@ -41,7 +41,7 @@ export function MonthColumnsPreview(props: RendererPreviewProps<MonthColumnsRend
 		const dayFontSize = Math.max(14, Math.floor(rowHeight * 0.8));
 		const headingFontSize = Math.max(12, Math.floor(tableHeaderHeight * 0.8));
 		const monthFontSize = Math.max(30, Math.floor(MONTH_TITLE_HEIGHT_PX * 0.9));
-		const calendarLayouts = calendars.map((calendar) => createCalendarMonthLayout(calendar, days, eventNameReplacements));
+		const calendarLayouts = calendars.map((calendar) => createCalendarMonthLayout(calendar, days, eventNameReplacements, eventTitleTemplatesByCalendar[calendar.id] ?? ""));
 
 		return (
 			<div
@@ -109,6 +109,7 @@ export function MonthColumnsPreview(props: RendererPreviewProps<MonthColumnsRend
 								calendars,
 								calendarLayouts,
 								eventNameReplacements,
+								eventTitleTemplatesByCalendar,
 								rowHeight,
 								bodyFontSize,
 								dayFontSize,
@@ -128,6 +129,7 @@ function renderDayRow(
 		calendars,
 		calendarLayouts,
 		eventNameReplacements,
+		eventTitleTemplatesByCalendar,
 		rowHeight,
 		bodyFontSize,
 		dayFontSize,
@@ -136,6 +138,7 @@ function renderDayRow(
 		calendars: Calendar[];
 		calendarLayouts: CalendarMonthLayout[];
 		eventNameReplacements: Record<string, string>;
+		eventTitleTemplatesByCalendar: Record<string, string>;
 		rowHeight: number;
 		bodyFontSize: number;
 		dayFontSize: number;
@@ -172,6 +175,7 @@ function renderDayRow(
 				renderEventCell(calendar, day, index, {
 					cellStyle,
 					eventNameReplacements,
+					eventTitleTemplatesByCalendar,
 					rowHeight,
 					layout: calendarLayouts[index],
 					dayIndex,
@@ -189,6 +193,7 @@ function renderEventCell(
 	{
 		cellStyle,
 		eventNameReplacements,
+		eventTitleTemplatesByCalendar,
 		rowHeight,
 		layout,
 		dayIndex,
@@ -196,16 +201,18 @@ function renderEventCell(
 	}: {
 		cellStyle: React.CSSProperties;
 		eventNameReplacements: Record<string, string>;
+		eventTitleTemplatesByCalendar: Record<string, string>;
 		rowHeight: number;
 		layout: CalendarMonthLayout;
 		dayIndex: number;
 		bodyFontSize: number;
 	},
 ) {
+	const titleTemplate = eventTitleTemplatesByCalendar[calendar.id] ?? "";
 	const content = calendar
 		.getEvents(day)
 		.filter((event: CalendarEvent) => !event.isMultipleDaysLong())
-		.map((event: CalendarEvent) => event.getFullSummary(eventNameReplacements))
+		.map((event: CalendarEvent) => event.getFullSummary(eventNameReplacements, titleTemplate))
 		.join(", ");
 	const activeLaneCount = layout.activeLaneCountByDay[dayIndex] ?? 0;
 	const leadingInset = activeLaneCount > 0 ? activeLaneCount * (MULTI_DAY_BAR_WIDTH_PX + MULTI_DAY_BAR_GAP_PX) + MULTI_DAY_LABEL_OFFSET_PX : 0;
@@ -298,7 +305,7 @@ function renderEventCell(
 	);
 }
 
-function createCalendarMonthLayout(calendar: Calendar, days: Time[], eventNameReplacements: Record<string, string>): CalendarMonthLayout {
+function createCalendarMonthLayout(calendar: Calendar, days: Time[], eventNameReplacements: Record<string, string>, titleTemplate: string): CalendarMonthLayout {
 	const spansByStartIndex = new Map<number, MultiDaySpan[]>();
 	const activeLaneCountByDay = new Array(days.length).fill(0);
 	const dayKeys = days.map((day) => day.toJSDate().toDateString());
@@ -326,7 +333,7 @@ function createCalendarMonthLayout(calendar: Calendar, days: Time[], eventNameRe
 			return {
 				startIndex,
 				endIndex,
-				label: event.getFullSummary(eventNameReplacements),
+				label: event.getFullSummary(eventNameReplacements, titleTemplate),
 			};
 		})
 		.filter((event): event is Omit<MultiDaySpan, "lane"> => event !== null)

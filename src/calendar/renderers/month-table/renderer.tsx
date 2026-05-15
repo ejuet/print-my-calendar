@@ -7,7 +7,7 @@ import { RendererPreviewProps } from "../types";
 import { MonthTableRendererSettings } from "./settings";
 
 export function MonthTablePreview(props: RendererPreviewProps<MonthTableRendererSettings>) {
-	const { startOfCalendar, endOfCalendar, calendars, eventNameReplacements, settings } = props;
+	const { startOfCalendar, endOfCalendar, calendars, eventNameReplacements, eventTitleTemplatesByCalendar, settings } = props;
 	const pageWidth = 0.1 * 4000 * (settings.calendarWidth / 100);
 	const tableFontSize = (settings.lineHeight / 100) * 40 * 0.65 * 0.1 * (settings.fontSize / 100);
 	const headingFontSize = (settings.lineHeight / 100) * 55 * 0.65 * 0.1 * (settings.fontSizeHeading / 100);
@@ -69,6 +69,7 @@ export function MonthTablePreview(props: RendererPreviewProps<MonthTableRenderer
 								fontSize: settings.fontSize,
 								tableFontSize,
 								eventNameReplacements,
+								eventTitleTemplatesByCalendar,
 							}),
 						)}
 					</tbody>
@@ -88,6 +89,7 @@ function renderDayRow(
 		fontSize,
 		tableFontSize,
 		eventNameReplacements,
+		eventTitleTemplatesByCalendar,
 	}: {
 		calendars: Calendar[];
 		previewAmount: number;
@@ -95,6 +97,7 @@ function renderDayRow(
 		fontSize: number;
 		tableFontSize: number;
 		eventNameReplacements: Record<string, string>;
+		eventTitleTemplatesByCalendar: Record<string, string>;
 	},
 ) {
 	if(index === previewAmount) {
@@ -130,7 +133,7 @@ function renderDayRow(
 					</b>
 				</div>
 			</td>
-			{calendars.map((cal, i) => renderEventCell(cal, day, i, { tdstyle, eventNameReplacements }))}
+			{calendars.map((cal, i) => renderEventCell(cal, day, i, { tdstyle, eventNameReplacements, eventTitleTemplatesByCalendar }))}
 		</tr>
 	);
 }
@@ -139,11 +142,20 @@ function renderEventCell(
 	cal: Calendar,
 	day: Time,
 	index: number,
-	{ tdstyle, eventNameReplacements }: { tdstyle: React.CSSProperties; eventNameReplacements: Record<string, string> },
+	{
+		tdstyle,
+		eventNameReplacements,
+		eventTitleTemplatesByCalendar,
+	}: {
+		tdstyle: React.CSSProperties;
+		eventNameReplacements: Record<string, string>;
+		eventTitleTemplatesByCalendar: Record<string, string>;
+	},
 ) {
+	const titleTemplate = eventTitleTemplatesByCalendar[cal.id] ?? "";
 	const content = cal
 		.getEvents(day)
-		.map((ev: CalendarEvent) => ev.getFullSummary(eventNameReplacements))
+		.map((ev: CalendarEvent) => ev.getFullSummary(eventNameReplacements, titleTemplate))
 		.join(", ");
 
 	return (
