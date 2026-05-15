@@ -138,20 +138,7 @@ export class Calendar {
 		this.items.push(ev);
 
 		if(ev.isMultipleDaysLong()) {
-			let clonedEvent = Object.create(ev);
-			clonedEvent.setSummaryPrefix("Beginn von ");
-			clonedEvent.endDate = new Time();
-			this.addToEventMap(ev.startDate.toJSDate(), clonedEvent);
-
-			clonedEvent = Object.create(ev);
-			clonedEvent.setSummaryPrefix("Ende von ");
-			clonedEvent.startDate = new Time();
-
-			const endDate = ev.endDate.toJSDate();
-			if(endDate.getHours() === 0 && endDate.getMinutes() === 0) {
-				endDate.setDate(endDate.getDate() - 1);
-			}
-			this.addToEventMap(endDate, clonedEvent);
+			console.warn("Event spans multiple days, not adding to event map:", ev);
 		} else {
 			this.addToEventMap(ev.startDate.toJSDate(), ev);
 		}
