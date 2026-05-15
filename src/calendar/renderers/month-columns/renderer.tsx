@@ -14,7 +14,7 @@ const MONTH_TITLE_HEIGHT_PX = 60;
 const MONTH_TITLE_MARGIN_BOTTOM_PX = 8;
 const MULTI_DAY_BAR_GAP_PX = 4;
 const MULTI_DAY_LABEL_OFFSET_PX = 8;
-const MULTI_DAY_LABEL_TRACK_WIDTH_PX = 18;
+const MULTI_DAY_LABEL_TRACK_WIDTH_PX = 60;
 const MULTI_DAY_BAR_COLOR = "#1f1f1f";
 const MULTI_DAY_LINE_INSET_PX = 2;
 
@@ -93,8 +93,7 @@ export function MonthColumnsPreview(props: RendererPreviewProps<MonthColumnsRend
 					style={{
 						width: "100%",
 						height: `${availableTableHeight}px`,
-						borderCollapse: "separate",
-						borderSpacing: 0,
+						borderCollapse: "collapse",
 						tableLayout: "fixed",
 						fontFamily: settings.fontFamily,
 					}}
@@ -279,13 +278,14 @@ function getDayBackgroundColor(day: Time) {
 
 function getBodyCellStyle(backgroundColor: string, rowHeight: number, bodyFontSize: number): React.CSSProperties {
 	return {
-		boxShadow: "inset 0 -1px 0 #1f1f1f, inset -1px 0 0 #1f1f1f",
 		backgroundColor,
 		height: `${rowHeight}px`,
 		padding: "0 4px",
 		verticalAlign: "middle",
 		fontSize: `${bodyFontSize}px`,
 		lineHeight: 0.95,
+		borderRight: "1px solid #1f1f1f",
+		borderBottom: "1px solid #1f1f1f",
 		overflowWrap: "anywhere",
 		wordBreak: "break-word",
 		position: "relative",
@@ -296,7 +296,7 @@ function getBodyCellStyle(backgroundColor: string, rowHeight: number, bodyFontSi
 function getDayCellStyle(cellStyle: React.CSSProperties, dayFontSize: number): React.CSSProperties {
 	return {
 		...cellStyle,
-		boxShadow: "inset 1px 0 0 #1f1f1f, inset 0 -1px 0 #1f1f1f, inset -1px 0 0 #1f1f1f",
+		borderLeft: "1px solid #1f1f1f",
 		textAlign: "center",
 		fontWeight: 700,
 		fontSize: `${dayFontSize}px`,
@@ -578,12 +578,12 @@ function getHeaderStyle({ width, height, fontSize }: { width: string; height: nu
 	return {
 		width,
 		height: `${height}px`,
-		boxShadow: "inset 1px 0 0 #1f1f1f, inset 0 -1px 0 #1f1f1f, inset -1px 0 0 #1f1f1f, inset 0 1px 0 #1f1f1f",
 		padding: "2px 4px",
 		backgroundColor: "#f6f6f6",
 		fontSize: `${fontSize}px`,
 		lineHeight: 0.95,
 		fontWeight: 700,
+		border: "1px solid #1f1f1f",
 		verticalAlign: "middle",
 		overflowWrap: "anywhere",
 		wordBreak: "break-word",
