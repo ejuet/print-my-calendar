@@ -7,7 +7,7 @@ export type MonthColumnsRendererSettings = {
 };
 
 export const defaultMonthColumnsRendererSettings: MonthColumnsRendererSettings = {
-	fontFamily: "Calibri",
+	fontFamily: "Arial",
 };
 
 export function MonthColumnsSettings({ settings, setSettings }: RendererSettingsProps<MonthColumnsRendererSettings>) {
