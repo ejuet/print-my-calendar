@@ -33,11 +33,14 @@ export async function createPdf(urls: string[], filename: string) {
 	downloadLink.click();
 }
 
-export function downloadAsPDF(startOfCalendar: Time, endOfCalendar: Time) {
+export function downloadAsPDF(startOfCalendar: Time, endOfCalendar: Time, extraPageIds: string[] = []) {
 	const promises: Promise<HTMLAnchorElement>[] = [];
 	mapMonthMap(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear) => {
 		promises.push(getDownloadLink(monthAndYear));
 		return null;
+	});
+	extraPageIds.forEach((pageId) => {
+		promises.push(getDownloadLink(pageId));
 	});
 
 	return Promise.all(promises).then((links) => {

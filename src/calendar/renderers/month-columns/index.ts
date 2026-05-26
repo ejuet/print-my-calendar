@@ -1,10 +1,11 @@
 import { downloadAsPDF } from "../../lib/export";
+import { LEGEND_PAGE_ID } from "../legend";
 import { defineRenderer, RendererPreviewProps } from "../types";
 import { MonthColumnsPreview } from "./renderer";
 import { defaultMonthColumnsRendererSettings, MonthColumnsRendererSettings, MonthColumnsSettings } from "./settings";
 
 async function saveMonthColumnsPdf({ startOfCalendar, endOfCalendar }: RendererPreviewProps<MonthColumnsRendererSettings>) {
-	return downloadAsPDF(startOfCalendar, endOfCalendar);
+	return downloadAsPDF(startOfCalendar, endOfCalendar, [LEGEND_PAGE_ID]);
 }
 
 export const monthColumnsRenderer = defineRenderer<MonthColumnsRendererSettings>({

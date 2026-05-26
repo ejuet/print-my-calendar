@@ -2,6 +2,7 @@ import React from "react";
 import { Time } from "ical.js";
 import { Calendar, CalendarEvent, getEventTitleTemplatesForCalendar } from "../../lib/calendar-model";
 import { getDaysInMonths, Language, mapMonthMap } from "../../lib/date";
+import { buildLegendData, LegendPage } from "../legend";
 import { RendererPreviewProps } from "../types";
 import { MonthColumnsBarStyle, MonthColumnsRendererSettings } from "./settings";
 
@@ -52,8 +53,9 @@ type MultiDayBarMetrics = {
 export function MonthColumnsPreview(props: RendererPreviewProps<MonthColumnsRendererSettings>) {
 	const { startOfCalendar, endOfCalendar, calendars, eventNameReplacements, eventTitleTemplatesByCalendar, settings } = props;
 	const calendarColumnWidths = getCalendarColumnWidths(calendars);
+	const legendData = buildLegendData(calendars, eventNameReplacements, eventTitleTemplatesByCalendar);
 
-	return mapMonthMap(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear, days) => {
+	const monthPages = mapMonthMap(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear, days) => {
 		const { availableTableHeight, tableHeaderHeight, rowHeight, bodyFontSize, dayFontSize, headingFontSize, monthFontSize } = getMonthColumnsMetrics(days.length);
 		const calendarLayouts = calendars.map((calendar) => createCalendarMonthLayout(calendar, days, eventNameReplacements, eventTitleTemplatesByCalendar));
 
@@ -135,6 +137,18 @@ export function MonthColumnsPreview(props: RendererPreviewProps<MonthColumnsRend
 			</div>
 		);
 	});
+
+	return [
+		...monthPages,
+		<LegendPage
+			key="legend-page"
+			data={legendData}
+			fontFamily={settings.fontFamily}
+			pageWidthPx={A4_WIDTH_PX}
+			pageHeightPx={A4_HEIGHT_PX}
+			padding={`${PAGE_PADDING_TOP_PX}px ${PAGE_PADDING_X_PX}px ${PAGE_PADDING_BOTTOM_PX}px`}
+		/>,
+	];
 }
 
 function renderDayRow(

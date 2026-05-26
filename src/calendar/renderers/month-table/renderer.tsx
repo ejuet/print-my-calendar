@@ -3,80 +3,116 @@ import { Time } from "ical.js";
 import { Table } from "react-bootstrap";
 import { Calendar, CalendarEvent, getEventTitleTemplatesForCalendar } from "../../lib/calendar-model";
 import { getDaysInMonths, Language, mapMonthMap } from "../../lib/date";
+import { buildLegendData, LegendPage } from "../legend";
 import { RendererPreviewProps } from "../types";
 import { MonthTableRendererSettings } from "./settings";
 
+const A4_WIDTH_PX = 794;
+const A4_HEIGHT_PX = 1123;
+const PAGE_PADDING_X_PX = 18;
+const PAGE_PADDING_Y_PX = 18;
+
 export function MonthTablePreview(props: RendererPreviewProps<MonthTableRendererSettings>) {
 	const { startOfCalendar, endOfCalendar, calendars, eventNameReplacements, eventTitleTemplatesByCalendar, settings } = props;
-	const pageWidth = 0.1 * 4000 * (settings.calendarWidth / 100);
+	const pageWidth = Math.min(0.1 * 4000 * (settings.calendarWidth / 100), A4_WIDTH_PX - PAGE_PADDING_X_PX * 2);
 	const tableFontSize = (settings.lineHeight / 100) * 40 * 0.65 * 0.1 * (settings.fontSize / 100);
 	const headingFontSize = (settings.lineHeight / 100) * 55 * 0.65 * 0.1 * (settings.fontSizeHeading / 100);
+	const legendData = buildLegendData(calendars, eventNameReplacements, eventTitleTemplatesByCalendar);
 
-	return mapMonthMap(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear, days) => {
+	const monthPages = mapMonthMap(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear, days) => {
 		return (
-			<div style={{ width: `${pageWidth}px`, margin: "auto" }} key={monthAndYear} className={`calendar ${monthAndYear}`} id={monthAndYear}>
-				<p
-					style={{
-						fontFamily: settings.fontFamily,
-						fontSize: `${(settings.lineHeight / 100) * 120 * 0.65 * 0.1 * (settings.fontSizeHeading / 100)}px`,
-						marginTop: `${0.1 * 0.05}em`,
-						marginBottom: `${0.1 * 0.07}em`,
-						contentVisibility: "visible",
-					}}
-					className="monthname"
-				>
-					{Language.getMonthName(monthAndYear)}
-				</p>
-				<Table
-					bordered
-					style={{
-						fontSize: `${1.8 * 0.1}em`,
-						verticalAlign: "middle",
-						padding: "0 px !important",
-						fontFamily: settings.fontFamily,
-						width: "100%",
-						tableLayout: "fixed",
-					}}
-				>
-					<thead>
-						<tr style={{ fontSize: (settings.lineHeight / 100) * 40 * 0.65 * 0.1 * (settings.fontSizeHeading / 100) }}>
-							<th style={{ width: "10%", verticalAlign: "middle" }}>Day</th>
-							{calendars.map((cal, i) => {
-								return (
-									<th
-										key={i}
-										style={{
-											verticalAlign: "middle",
-											width: `${(90 / calendars.length) * cal.width}%`,
-											height: `${(settings.lineHeight / 100) * 55 * 0.1}px`,
-											fontSize: `${headingFontSize}px`,
-											lineHeight: 1.1,
-											overflowWrap: "anywhere",
-										}}
-									>
-										{cal.name}
-									</th>
-								);
-							})}
-						</tr>
-					</thead>
-					<tbody>
-						{days.map((day, index) =>
-							renderDayRow(day, index, {
-								calendars,
-								previewAmount: settings.previewAmount,
-								lineHeight: settings.lineHeight,
-								fontSize: settings.fontSize,
-								tableFontSize,
-								eventNameReplacements,
-								eventTitleTemplatesByCalendar,
-							}),
-						)}
-					</tbody>
-				</Table>
+			<div
+				style={{
+					width: `${A4_WIDTH_PX}px`,
+					height: `${A4_HEIGHT_PX}px`,
+					margin: "24px auto",
+					padding: `${PAGE_PADDING_Y_PX}px ${PAGE_PADDING_X_PX}px`,
+					boxSizing: "border-box",
+					backgroundColor: "#ffffff",
+					boxShadow: "0 4px 16px rgba(0, 0, 0, 0.18)",
+					overflow: "hidden",
+				}}
+				key={monthAndYear}
+				className={`calendar ${monthAndYear}`}
+				id={monthAndYear}
+			>
+				<div style={{ width: `${pageWidth}px`, margin: "0 auto" }}>
+					<p
+						style={{
+							fontFamily: settings.fontFamily,
+							fontSize: `${(settings.lineHeight / 100) * 120 * 0.65 * 0.1 * (settings.fontSizeHeading / 100)}px`,
+							marginTop: `${0.1 * 0.05}em`,
+							marginBottom: `${0.1 * 0.07}em`,
+							contentVisibility: "visible",
+						}}
+						className="monthname"
+					>
+						{Language.getMonthName(monthAndYear)}
+					</p>
+					<Table
+						bordered
+						style={{
+							fontSize: `${1.8 * 0.1}em`,
+							verticalAlign: "middle",
+							padding: "0 px !important",
+							fontFamily: settings.fontFamily,
+							width: "100%",
+							tableLayout: "fixed",
+						}}
+					>
+						<thead>
+							<tr style={{ fontSize: (settings.lineHeight / 100) * 40 * 0.65 * 0.1 * (settings.fontSizeHeading / 100) }}>
+								<th style={{ width: "10%", verticalAlign: "middle" }}>Day</th>
+								{calendars.map((cal, i) => {
+									return (
+										<th
+											key={i}
+											style={{
+												verticalAlign: "middle",
+												width: `${(90 / calendars.length) * cal.width}%`,
+												height: `${(settings.lineHeight / 100) * 55 * 0.1}px`,
+												fontSize: `${headingFontSize}px`,
+												lineHeight: 1.1,
+												overflowWrap: "anywhere",
+											}}
+										>
+											{cal.name}
+										</th>
+									);
+								})}
+							</tr>
+						</thead>
+						<tbody>
+							{days.map((day, index) =>
+								renderDayRow(day, index, {
+									calendars,
+									previewAmount: settings.previewAmount,
+									lineHeight: settings.lineHeight,
+									fontSize: settings.fontSize,
+									tableFontSize,
+									eventNameReplacements,
+									eventTitleTemplatesByCalendar,
+								}),
+							)}
+						</tbody>
+					</Table>
+				</div>
 			</div>
 		);
 	});
+
+	return [
+		...monthPages,
+		<LegendPage
+			key="legend-page"
+			data={legendData}
+			fontFamily={settings.fontFamily}
+			pageWidthPx={A4_WIDTH_PX}
+			pageHeightPx={A4_HEIGHT_PX}
+			padding={`${PAGE_PADDING_Y_PX}px ${PAGE_PADDING_X_PX}px`}
+			contentWidth={`${pageWidth}px`}
+		/>,
+	];
 }
 
 function renderDayRow(
