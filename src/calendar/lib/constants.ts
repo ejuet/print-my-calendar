@@ -3,11 +3,11 @@ export const defaultLanguage = "de-DE";
 export const nicerTrashcanNames = true;
 
 export const defaultEventNameReplacements: Record<string, string> = {
-	Restabfallbehaelter: "⚫️",
+	Restabfallbehaelter: "🖤",
 	"Gelbe Grossbehaelter": "💛💛",
 	"Gelbe Behaelter": "💛",
 	Bioabfallbehaelter: "💚",
-	Papierbehaelter: "🔵",
+	Papierbehaelter: "💙",
 	"Weihnachtsbaeume": "🎄",
 	"Sperrmuell": "🚚"
 };
