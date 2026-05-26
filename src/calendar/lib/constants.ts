@@ -1,4 +1,4 @@
-export const useUmlaute = true;
+export const useUmlaute = false;
 export const defaultLanguage = "de-DE";
 export const nicerTrashcanNames = true;
 
