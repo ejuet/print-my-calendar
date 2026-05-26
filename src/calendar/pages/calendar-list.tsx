@@ -101,6 +101,19 @@ export function CalendarList() {
 	const rendererSettings = (rendererSettingsById[selectedRenderer.id] ?? selectedRenderer.createDefaultSettings()) as never;
 	const RendererPreview = selectedRenderer.PreviewComponent;
 	const RendererSettings = selectedRenderer.SettingsComponent;
+	const updateEventTitleTemplate = (calendarId: string, nextTemplate: string) => {
+		setEventTitleTemplatesByCalendar((old) => {
+			if(nextTemplate.trim() === "") {
+				const { [calendarId]: _, ...rest } = old;
+				return rest;
+			}
+
+			return {
+				...old,
+				[calendarId]: nextTemplate,
+			};
+		});
+	};
 	const rendererProps = {
 		startOfCalendar,
 		endOfCalendar,
@@ -302,28 +315,38 @@ export function CalendarList() {
 							<p>Wrap or rewrite event titles for a specific column. Use <code>{"{title}"}</code> where the event name should appear, for example <code>🎂 {"{title}"} 🎂</code>.</p>
 							{calendars.length === 0 && <p>Import or add a column first to configure its event title template.</p>}
 							{calendars.map((calendar, index) => (
-								<div key={calendar.id} className="d-flex justify-content-center align-items-center" style={{ gap: 10, margin: 15, flexWrap: "wrap" }}>
-									<div style={{ minWidth: 180, fontWeight: 700 }}>{calendar.name || `Column ${index + 1}`}</div>
-									<Form.Control
-										type="text"
-										placeholder='Example: 🎂 {title} 🎂'
-										defaultValue={eventTitleTemplatesByCalendar[calendar.id] ?? ""}
-										onBlur={(e) => {
-											const nextTemplate = e.target.value;
-											setEventTitleTemplatesByCalendar((old) => {
-												if(nextTemplate === "") {
-													const { [calendar.id]: _, ...rest } = old;
-													return rest;
-												}
-
-												return {
-													...old,
-													[calendar.id]: nextTemplate,
-												};
-											});
-										}}
-										style={{ maxWidth: 420 }}
-									/>
+								<div key={calendar.id} style={{ margin: 15 }}>
+									<div className="d-flex justify-content-center align-items-center" style={{ gap: 10, flexWrap: "wrap" }}>
+										<div style={{ minWidth: 180, fontWeight: 700 }}>{calendar.name || `Column ${index + 1}`}</div>
+										<Form.Control
+											type="text"
+											placeholder='Example: 🎂 {title} 🎂'
+											defaultValue={eventTitleTemplatesByCalendar[calendar.id] ?? ""}
+											onBlur={(e) => updateEventTitleTemplate(calendar.id, e.target.value)}
+											style={{ maxWidth: 420 }}
+										/>
+									</div>
+									{calendar.getIsMerged() && (
+										<div style={{ marginTop: 12 }}>
+											<p style={{ textAlign: "center", marginBottom: 10 }}>Templates for events from the original calendars inside this merged column:</p>
+											{calendar.getSourceCalendars().map((sourceCalendar) => (
+												<div
+													key={sourceCalendar.id}
+													className="d-flex justify-content-center align-items-center"
+													style={{ gap: 10, margin: "10px 0", flexWrap: "wrap" }}
+												>
+													<div style={{ minWidth: 180 }}>{sourceCalendar.name}</div>
+													<Form.Control
+														type="text"
+														placeholder='Example: 🎂 {title} 🎂'
+														defaultValue={eventTitleTemplatesByCalendar[sourceCalendar.id] ?? ""}
+														onBlur={(e) => updateEventTitleTemplate(sourceCalendar.id, e.target.value)}
+														style={{ maxWidth: 420 }}
+													/>
+												</div>
+											))}
+										</div>
+									)}
 								</div>
 							))}
 						</AccordionBody>

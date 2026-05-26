@@ -15,6 +15,12 @@ export function applyEventTitleTemplate(title: string, template = "") {
 	return `${template} ${title}`.trim();
 }
 
+export function applyEventTitleTemplates(title: string, templates: string | string[] = "") {
+	const normalizedTemplates = Array.isArray(templates) ? templates : [templates];
+
+	return normalizedTemplates.reduce((result, template) => applyEventTitleTemplate(result, template), title);
+}
+
 export class CalendarEvent {
 	startDate: any;
 	summary: string;
@@ -49,7 +55,7 @@ export class CalendarEvent {
 		this.summaryPrefix = prefix;
 	}
 
-	getPrettierSummary(replacements: Record<string, string> = defaultEventNameReplacements, titleTemplate = "") {
+	getPrettierSummary(replacements: Record<string, string> = defaultEventNameReplacements, titleTemplates: string | string[] = "") {
 		let result = this.summary;
 
 		if(nicerTrashcanNames) {
@@ -62,7 +68,7 @@ export class CalendarEvent {
 			result = result.replaceAll("ae", "ä");
 		}
 
-		return applyEventTitleTemplate(result, titleTemplate);
+		return applyEventTitleTemplates(result, titleTemplates);
 	}
 
 	isTrash() {
@@ -108,7 +114,7 @@ export class CalendarEvent {
 		return this.isMultipleDaysLong() && this.endDate.compareDateOnlyTz(date, Timezone.localTimezone) === 0;
 	}
 
-	getFullSummary(replacements: Record<string, string> = defaultEventNameReplacements, titleTemplate = "") {
+	getFullSummary(replacements: Record<string, string> = defaultEventNameReplacements, titleTemplates: string | string[] = "") {
 		const startTime =
 			this.startDate.hour !== 0 || this.startDate.minute !== 0 || this.startDate.second !== 0
 				? this.startDate.toJSDate().toLocaleTimeString(defaultLanguage)
@@ -133,7 +139,7 @@ export class CalendarEvent {
 			timeLabel = ` (${timeLabel})`;
 		}
 
-		return `${this.summaryPrefix}${this.getPrettierSummary(replacements, titleTemplate)}${timeLabel}`;
+		return `${this.summaryPrefix}${this.getPrettierSummary(replacements, titleTemplates)}${timeLabel}`;
 	}
 }
 
@@ -183,6 +189,23 @@ export class Calendar {
 
 	getAllEvents() {
 		return this.items;
+	}
+
+	getSourceCalendars() {
+		if(!this.isMerged) {
+			return [this];
+		}
+
+		const calendars: Calendar[] = [];
+
+		for(let i = 0; i < this.items.length; i++) {
+			const calendar = this.items[i].getCalendar();
+			if(calendars.indexOf(calendar) === -1) {
+				calendars.push(calendar);
+			}
+		}
+
+		return calendars;
 	}
 
 	getMinMaxStartDate(mult: number) {
@@ -240,14 +263,7 @@ export class Calendar {
 	}
 
 	splitCalendar() {
-		const calendars: Calendar[] = [];
-
-		for(let i = 0; i < this.items.length; i++) {
-			const calendar = this.items[i].getCalendar();
-			if(calendars.indexOf(calendar) === -1) {
-				calendars.push(calendar);
-			}
-		}
+		const calendars = this.getSourceCalendars();
 
 		calendars.forEach((calendar) => {
 			calendar.isMerged = false;
@@ -255,4 +271,25 @@ export class Calendar {
 
 		return calendars;
 	}
+}
+
+export function getEventTitleTemplatesForCalendar(
+	event: CalendarEvent,
+	calendar: Calendar,
+	eventTitleTemplatesByCalendar: Record<string, string>,
+) {
+	const templates: string[] = [];
+	const sourceCalendar = event.getCalendar();
+	const sourceTemplate = eventTitleTemplatesByCalendar[sourceCalendar.id];
+	const visibleCalendarTemplate = eventTitleTemplatesByCalendar[calendar.id];
+
+	if(sourceTemplate?.trim()) {
+		templates.push(sourceTemplate);
+	}
+
+	if(calendar.id !== sourceCalendar.id && visibleCalendarTemplate?.trim()) {
+		templates.push(visibleCalendarTemplate);
+	}
+
+	return templates;
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import { Time } from "ical.js";
 import { Table } from "react-bootstrap";
-import { Calendar, CalendarEvent } from "../../lib/calendar-model";
+import { Calendar, CalendarEvent, getEventTitleTemplatesForCalendar } from "../../lib/calendar-model";
 import { getDaysInMonths, Language, mapMonthMap } from "../../lib/date";
 import { RendererPreviewProps } from "../types";
 import { MonthTableRendererSettings } from "./settings";
@@ -152,10 +152,9 @@ function renderEventCell(
 		eventTitleTemplatesByCalendar: Record<string, string>;
 	},
 ) {
-	const titleTemplate = eventTitleTemplatesByCalendar[cal.id] ?? "";
 	const content = cal
 		.getEvents(day)
-		.map((ev: CalendarEvent) => ev.getFullSummary(eventNameReplacements, titleTemplate))
+		.map((ev: CalendarEvent) => ev.getFullSummary(eventNameReplacements, getEventTitleTemplatesForCalendar(ev, cal, eventTitleTemplatesByCalendar)))
 		.join(", ");
 
 	return (

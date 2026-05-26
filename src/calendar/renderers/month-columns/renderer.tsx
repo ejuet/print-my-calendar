@@ -1,6 +1,6 @@
 import React from "react";
 import { Time } from "ical.js";
-import { Calendar, CalendarEvent } from "../../lib/calendar-model";
+import { Calendar, CalendarEvent, getEventTitleTemplatesForCalendar } from "../../lib/calendar-model";
 import { getDaysInMonths, Language, mapMonthMap } from "../../lib/date";
 import { RendererPreviewProps } from "../types";
 import { MonthColumnsBarStyle, MonthColumnsRendererSettings } from "./settings";
@@ -55,7 +55,7 @@ export function MonthColumnsPreview(props: RendererPreviewProps<MonthColumnsRend
 
 	return mapMonthMap(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear, days) => {
 		const { availableTableHeight, tableHeaderHeight, rowHeight, bodyFontSize, dayFontSize, headingFontSize, monthFontSize } = getMonthColumnsMetrics(days.length);
-		const calendarLayouts = calendars.map((calendar) => createCalendarMonthLayout(calendar, days, eventNameReplacements, eventTitleTemplatesByCalendar[calendar.id] ?? ""));
+		const calendarLayouts = calendars.map((calendar) => createCalendarMonthLayout(calendar, days, eventNameReplacements, eventTitleTemplatesByCalendar));
 
 		return (
 			<div
@@ -319,18 +319,13 @@ function getDayCellStyle(cellStyle: React.CSSProperties, dayFontSize: number): R
 	};
 }
 
-function getSingleDayEventContent(
-	calendar: Calendar,
-	day: Time,
-	eventNameReplacements: Record<string, string>,
-	eventTitleTemplatesByCalendar: Record<string, string>,
-) {
-	const titleTemplate = eventTitleTemplatesByCalendar[calendar.id] ?? "";
-
+function getSingleDayEventContent(calendar: Calendar, day: Time, eventNameReplacements: Record<string, string>, eventTitleTemplatesByCalendar: Record<string, string>) {
 	return calendar
 		.getEvents(day)
 		.filter((event: CalendarEvent) => !event.isMultipleDaysLong())
-		.map((event: CalendarEvent) => event.getFullSummary(eventNameReplacements, titleTemplate))
+		.map((event: CalendarEvent) =>
+			event.getFullSummary(eventNameReplacements, getEventTitleTemplatesForCalendar(event, calendar, eventTitleTemplatesByCalendar)),
+		)
 		.join(", ");
 }
 
@@ -497,7 +492,12 @@ function getMultiDayBarMetrics(barStyle: MonthColumnsBarStyle): MultiDayBarMetri
 	};
 }
 
-function createCalendarMonthLayout(calendar: Calendar, days: Time[], eventNameReplacements: Record<string, string>, titleTemplate: string): CalendarMonthLayout {
+function createCalendarMonthLayout(
+	calendar: Calendar,
+	days: Time[],
+	eventNameReplacements: Record<string, string>,
+	eventTitleTemplatesByCalendar: Record<string, string>,
+): CalendarMonthLayout {
 	const spansByStartIndex = new Map<number, MultiDaySpan[]>();
 	const activeLaneCountByDay = new Array(days.length).fill(0);
 	const dayKeys = days.map((day) => day.toJSDate().toDateString());
@@ -525,7 +525,7 @@ function createCalendarMonthLayout(calendar: Calendar, days: Time[], eventNameRe
 			return {
 				startIndex,
 				endIndex,
-				label: event.getFullSummary(eventNameReplacements, titleTemplate),
+				label: event.getFullSummary(eventNameReplacements, getEventTitleTemplatesForCalendar(event, calendar, eventTitleTemplatesByCalendar)),
 				hasStartCap: event.startDate.toJSDate() >= monthStart,
 				hasEndCap: effectiveEnd <= monthEnd,
 			};
