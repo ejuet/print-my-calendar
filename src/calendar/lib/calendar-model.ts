@@ -80,9 +80,10 @@ export class CalendarEvent {
 
 	isFullDayEvent() {
 		if(this.startDate.isDate && this.endDate.isDate) {
-			return this.startDate.compareDateOnlyTz(this.endDate, Timezone.utcTimezone) === -1;
+			return this.endDate.subtractDate(this.startDate).toSeconds() === 24 * 60 * 60;
 		}
 
+		// Fallback for events that e.g. go from 00:00 to 00:00 the next day, but are not marked as date-only
 		const start = this.startDate.toJSDate();
 		const end = this.endDate.toJSDate();
 
