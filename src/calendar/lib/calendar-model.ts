@@ -79,6 +79,10 @@ export class CalendarEvent {
 	}
 
 	isFullDayEvent() {
+		if(this.startDate.isDate && this.endDate.isDate) {
+			return this.startDate.compareDateOnlyTz(this.endDate, Timezone.utcTimezone) === -1;
+		}
+
 		const start = this.startDate.toJSDate();
 		const end = this.endDate.toJSDate();
 
