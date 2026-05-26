@@ -51,6 +51,7 @@ type MultiDayBarMetrics = {
 
 export function MonthColumnsPreview(props: RendererPreviewProps<MonthColumnsRendererSettings>) {
 	const { startOfCalendar, endOfCalendar, calendars, eventNameReplacements, eventTitleTemplatesByCalendar, settings } = props;
+	const calendarColumnWidths = getCalendarColumnWidths(calendars);
 
 	return mapMonthMap(getDaysInMonths(startOfCalendar, endOfCalendar), (monthAndYear, days) => {
 		const { availableTableHeight, tableHeaderHeight, rowHeight, bodyFontSize, dayFontSize, headingFontSize, monthFontSize } = getMonthColumnsMetrics(days.length);
@@ -105,7 +106,7 @@ export function MonthColumnsPreview(props: RendererPreviewProps<MonthColumnsRend
 								<th
 									key={index}
 									style={getHeaderStyle({
-										width: `${(88 / calendars.length) * calendar.width}%`,
+										width: `${calendarColumnWidths[index]}%`,
 										height: tableHeaderHeight,
 										fontSize: headingFontSize,
 									})}
@@ -264,6 +265,21 @@ function getMonthColumnsMetrics(dayCount: number): MonthColumnsMetrics {
 		headingFontSize: Math.max(12, Math.floor(tableHeaderHeight * 0.8)),
 		monthFontSize: Math.max(30, Math.floor(MONTH_TITLE_HEIGHT_PX * 0.9)),
 	};
+}
+
+function getCalendarColumnWidths(calendars: Calendar[]) {
+	if(calendars.length === 0) {
+		return [];
+	}
+
+	const normalizedWidths = calendars.map((calendar) => (Number.isFinite(calendar.width) ? Math.max(0, calendar.width) : 0));
+	const totalWidth = normalizedWidths.reduce((sum, width) => sum + width, 0);
+
+	if(totalWidth <= 0) {
+		return calendars.map(() => 88 / calendars.length);
+	}
+
+	return normalizedWidths.map((width) => (88 * width) / totalWidth);
 }
 
 function getDayBackgroundColor(day: Time) {
